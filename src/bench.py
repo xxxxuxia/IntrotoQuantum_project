@@ -14,7 +14,7 @@ from pathlib import Path
 CSV_FIELDS = [
     "exp", "instance_id", "n", "p", "init", "optimizer", "target", "precision",
     "noise", "energy", "approx_ratio", "p_opt", "best_cost", "violations",
-    "n_evals", "wall_time_s", "seed",
+    "makespan", "n_evals", "wall_time_s", "seed",
 ]
 
 KEY_FIELDS = [

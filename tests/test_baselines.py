@@ -95,6 +95,40 @@ def test_sa_beats_random_baseline():
     assert sa["cost"] <= best_random
 
 
+def test_cp_sat_matches_brute_force():
+    # CP-SAT must find the same true optimum brute force does, across sizes/lambdas.
+    for seed in range(10):
+        n = 6 + (seed % 7)  # 6..12
+        lam = [0.1, 0.5, 1.0, 2.0, 5.0][seed % 5]
+        inst = P.generate_instance(n, seed=seed, lam=lam)
+        bf = P.brute_force(inst)
+        r = B.cp_sat_solve(inst, time_limit_s=5)
+        assert r["optimal"]
+        assert np.isclose(r["cost"], bf["c_min"], atol=1e-6)
+
+
+def test_cp_sat_solves_past_brute_force_limit():
+    # n=28 > problem.BRUTE_FORCE_MAX_N (24): brute_force can't check this one,
+    # but CP-SAT should still solve it fast and prove optimality.
+    inst = P.generate_instance(28, seed=0, lam=0.5)
+    r = B.cp_sat_solve(inst, time_limit_s=15)
+    assert r["optimal"]
+    assert r["violations"] == 0  # planted bipartition guarantees a zero-violation optimum exists
+
+
+def test_reference_optimum_dispatches_on_n():
+    small = P.generate_instance(10, seed=0)
+    ref_small = B.reference_optimum(small)
+    assert ref_small["method"] == "brute_force"
+    assert np.isclose(ref_small["c_min"], P.brute_force(small)["c_min"])
+
+    big = P.generate_instance(28, seed=0)
+    ref_big = B.reference_optimum(big, cp_sat_time_limit_s=15)
+    assert ref_big["method"] == "cp_sat"
+    assert ref_big["optimal"]
+    assert np.isclose(ref_big["c_max"], P.c_max_exact(big))
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

@@ -1,14 +1,17 @@
 """Classical baselines for the job-placement problem: Karmarkar-Karp, greedy LPT,
-simulated annealing.
+simulated annealing, CP-SAT.
 
 KK and greedy LPT are pure load-balancing heuristics: they only look at job
 weights and ignore the conflict graph entirely, which is standard practice for
 these algorithms. Simulated annealing optimizes the full cost function
 (balance + conflict penalty) via local search, so it's the one baseline that
-can actually respect anti-affinity constraints.
+can actually respect anti-affinity constraints. CP-SAT is an exact solver: it
+can find (and often prove) the true optimum well past n=24, where
+problem.brute_force stops being feasible.
 
 Every function returns a dict with the same shape so results are directly
-comparable: {"bitstring", "cost", "violations", "wall_time_s"}.
+comparable: {"bitstring", "cost", "violations", "wall_time_s"}. cp_sat_solve
+additionally reports "status" and "optimal".
 """
 
 import heapq
@@ -16,6 +19,7 @@ import itertools
 import time
 
 import numpy as np
+from ortools.sat.python import cp_model
 
 import problem as P
 
@@ -104,3 +108,67 @@ def simulated_annealing(inst, seed, n_iters=20000, T0=1.0, T_min=1e-3, z_init=No
         T = max(T * cooling_rate, T_min)
 
     return _result(inst, best_z, t0)
+
+
+# ---------------------------------------------------------------- CP-SAT
+
+def cp_sat_solve(inst, time_limit_s=10, num_workers=8):
+    """Exact solve via CP-SAT, usable far past problem.brute_force's n<=24 limit.
+
+    CP-SAT only works with integers, so the model is built on the raw integer
+    weights (not the normalized ones): D = sum(w_raw_i * z_i) is an integer,
+    D^2 is linearized via AddMultiplicationEquality, and dividing by max(w_raw)^2
+    at the end recovers the same normalized cost problem.cost() reports. Each
+    conflict edge similarly gets one linearized product term (z_i*z_j via the
+    boolean-AND identity) so the full C(z) -- balance and penalty together --
+    is the actual objective being minimized, same as simulated_annealing.
+    """
+    t0 = time.perf_counter()
+    n = inst["n"]
+    w_raw = inst["weights_raw"]
+    max_w = max(w_raw)
+    lam = inst["lambda"]
+
+    model = cp_model.CpModel()
+    x = [model.NewBoolVar(f"x{i}") for i in range(n)]  # x_i=1 -> z_i=-1
+
+    sum_w = sum(w_raw)
+    D = model.NewIntVar(-sum_w, sum_w, "D")
+    model.Add(D == sum(w_raw[i] * (1 - 2 * x[i]) for i in range(n)))
+    D_sq = model.NewIntVar(0, sum_w * sum_w, "D_sq")
+    model.AddMultiplicationEquality(D_sq, [D, D])
+
+    obj_terms = [(1.0 / (max_w ** 2)) * D_sq]
+    for i, j in inst["edges"]:
+        p_ij = model.NewBoolVar(f"p{i}_{j}")
+        model.AddMultiplicationEquality(p_ij, [x[i], x[j]])
+        obj_terms.append(lam * (1 - 2 * x[i] - 2 * x[j] + 4 * p_ij))
+    model.Minimize(sum(obj_terms))
+
+    solver = cp_model.CpSolver()
+    solver.parameters.max_time_in_seconds = time_limit_s
+    solver.parameters.num_workers = num_workers
+    status = solver.Solve(model)
+
+    bitstring = "".join(str(solver.Value(xi)) for xi in x)
+    z = P.bitstring_to_spins(bitstring)
+    result = _result(inst, z, t0)
+    result["status"] = solver.StatusName(status)
+    result["optimal"] = status == cp_model.OPTIMAL
+    return result
+
+
+def reference_optimum(inst, cp_sat_time_limit_s=10):
+    """Ground truth (c_min, c_max) for approx_ratio, valid for any n.
+
+    Uses problem.brute_force (exact, exhaustive) up to n=24 as the team agreed;
+    above that, c_max has a closed form (problem.c_max_exact) regardless of n,
+    and c_min falls back to CP-SAT, which should be able to prove optimality
+    well past n=24 for instances of this size/structure (verified up to n=30
+    during development).
+    """
+    if inst["n"] <= P.BRUTE_FORCE_MAX_N:
+        bf = P.brute_force(inst)
+        return {"c_min": bf["c_min"], "c_max": bf["c_max"], "method": "brute_force", "optimal": True}
+    r = cp_sat_solve(inst, time_limit_s=cp_sat_time_limit_s)
+    return {"c_min": r["cost"], "c_max": P.c_max_exact(inst), "method": "cp_sat", "optimal": r["optimal"]}

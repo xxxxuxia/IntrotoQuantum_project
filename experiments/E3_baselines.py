@@ -1,9 +1,14 @@
-"""E3 (preliminary, W8): first CPU timings for the classical baselines, n = 10-24.
+"""E3: classical baselines (KK, LPT, SA, CP-SAT) timing + quality, n = 8-28.
 
-Generates one fixed-seed instance per size, runs KK, greedy LPT and SA on
-each, and checkpoints cost/violations/wall_time_s/approx_ratio to
+Generates one fixed-seed instance per size, runs all four baselines on each,
+and checkpoints cost/violations/wall_time_s/approx_ratio to
 results/baselines_timing.csv. Re-running this script skips rows already on
 disk (see bench.run_sweep).
+
+Ground truth for approx_ratio comes from baselines.reference_optimum, which
+uses problem.brute_force up to n=24 (exhaustive) and CP-SAT above that (exact,
+proven optimal for every size tested up to 30 during development -- see
+tests/test_baselines.py).
 """
 
 import sys
@@ -18,21 +23,22 @@ import problem as P
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS_CSV = ROOT / "results" / "baselines_timing.csv"
 BASE_SEED = 0
-SIZES = range(10, 25)
+SIZES = range(8, 29)
+OPTIMIZERS = ("KK", "LPT", "SA", "CPSAT")
 
-_bf_cache = {}
+_ref_cache = {}
 
 
-def _brute_force_cached(inst):
-    if inst["id"] not in _bf_cache:
-        _bf_cache[inst["id"]] = P.brute_force(inst)
-    return _bf_cache[inst["id"]]
+def _reference_cached(inst):
+    if inst["id"] not in _ref_cache:
+        _ref_cache[inst["id"]] = B.reference_optimum(inst)
+    return _ref_cache[inst["id"]]
 
 
 def build_tasks():
     tasks = []
     for n in SIZES:
-        for optimizer in ("KK", "LPT", "SA"):
+        for optimizer in OPTIMIZERS:
             tasks.append({
                 "exp": "E3_baselines",
                 "instance_id": f"n{n}_s{BASE_SEED}",
@@ -50,18 +56,21 @@ def build_tasks():
 
 def runner(task):
     inst = P.generate_instance(task["n"], seed=task["seed"])
-    bf = _brute_force_cached(inst)
-    c_min, c_max = bf["c_min"], bf["c_max"]
+    ref = _reference_cached(inst)
+    c_min, c_max = ref["c_min"], ref["c_max"]
 
     if task["optimizer"] == "KK":
         r = B.karmarkar_karp(inst)
     elif task["optimizer"] == "LPT":
         r = B.greedy_lpt(inst)
-    else:
+    elif task["optimizer"] == "SA":
         r = B.simulated_annealing(inst, seed=task["seed"])
+    else:
+        r = B.cp_sat_solve(inst)
 
     denom = c_max - c_min
     approx_ratio = 1.0 if denom <= 1e-9 else (c_max - r["cost"]) / denom
+    z = P.bitstring_to_spins(r["bitstring"])
 
     return {
         "energy": r["cost"],
@@ -69,6 +78,7 @@ def runner(task):
         "p_opt": "",
         "best_cost": c_min,
         "violations": r["violations"],
+        "makespan": P.makespan(inst, z),
         "n_evals": "",
         "wall_time_s": r["wall_time_s"],
     }
