@@ -1,0 +1,202 @@
+% Section 3 -- Problem Formulation (P2)
+% Needs: \usepackage{amsmath, amssymb, booktabs}
+% Every number here comes from src/problem.py or results/lambda_sweep.csv.
+
+\section{Problem Formulation}
+\label{sec:formulation}
+
+This section turns the scheduling problem into the cost function that QAOA minimises.
+Table~\ref{tab:notation} lists the notation used throughout the report.
+
+\begin{table}[h]
+  \centering
+  \caption{Notation.}
+  \label{tab:notation}
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    Symbol & Meaning \\
+    \midrule
+    $n$ & number of jobs (= number of qubits) \\
+    $\tilde w_i$ & runtime of job $i$ in raw units (integer) \\
+    $w_i = \tilde w_i / \max_k \tilde w_k$ & normalised runtime, $w_i \in (0, 1]$ \\
+    $z_i \in \{+1, -1\}$ & assignment of job $i$: $+1$ = node A, $-1$ = node B \\
+    $x_i \in \{0, 1\}$ & measured bit for qubit $i$, with $z_i = 1 - 2x_i$ \\
+    $E$ & conflict (anti-affinity) graph: pairs that should not share a node \\
+    $D = \sum_i w_i z_i$ & load difference between node A and node B \\
+    $V(z)$ & number of violated conflicts (edges with both jobs on one node) \\
+    $\lambda$ & conflict penalty weight \\
+    $J_{ij}$ & Ising coupling between qubits $i$ and $j$ \\
+    $s = \max_{i<j} |J_{ij}|$ & Hamiltonian scale factor \\
+    $C(z)$, $H_C$ & classical cost function and its cost Hamiltonian \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Scheduling model}
+
+We place $n$ jobs on two identical compute nodes, A and B.
+Job $i$ has runtime $\tilde w_i$, and some pairs of jobs conflict: for example, two memory-bound jobs that slow each other down when co-located.
+The goal is to finish all jobs as early as possible while keeping conflicting jobs on different nodes.
+
+Each job is described by one binary variable $z_i$.
+With total work $W = \sum_i w_i$, the loads on the two nodes are $W_A = (W + D)/2$ and $W_B = (W - D)/2$, so the time at which the busier node finishes (the \emph{makespan}) is
+\begin{equation}
+  \text{makespan} = \max(W_A, W_B) = \frac{W + |D|}{2}.
+  \label{eq:makespan}
+\end{equation}
+Since $W$ does not depend on the assignment, minimising the makespan is the same as minimising $D^2$.
+Without conflicts this is the number partitioning problem, the first example in Lucas's catalogue of Ising formulations~\cite{lucas2014}.
+Its decision version is NP-complete, although it is only weakly NP-hard: pseudo-polynomial dynamic programming and the Karmarkar--Karp differencing heuristic~\cite{karmarkar1982} solve typical instances well.
+We compare against these methods in Section~\ref{sec:results}.
+
+\subsection{Instance generation}
+\label{sec:instances}
+
+Instances are generated from a single integer seed, so every method in this report is run on exactly the same problems.
+
+\paragraph{Runtimes.}
+Real HPC job runtimes are heavy-tailed: most jobs are short and a few are very long.
+We draw $\tilde w_i = \max\!\big(1, \operatorname{round}(e^{X_i})\big)$ with $X_i \sim \mathcal{N}(2, 1)$, a lognormal distribution.
+Over 3{,}200 sampled jobs the median runtime is 8, the mean is 12, the 95th percentile is 37 and the largest is 205.
+
+\paragraph{Conflicts.}
+Our original plan drew the conflict graph as an Erd\H{o}s--R\'enyi graph, keeping each pair with probability $q = 0.2$.
+With two nodes, however, all conflicts can be satisfied only if the graph is bipartite.
+A single triangle of mutually conflicting jobs makes a conflict-free schedule impossible, and a random graph with $q = 0.2$ contains $\binom{n}{3} q^3$ triangles on average: about 1 at $n = 10$ and 9 at $n = 20$.
+We therefore use a \emph{planted bipartition}: the jobs are split at random into two hidden halves of sizes $\lfloor n/2 \rfloor$ and $\lceil n/2 \rceil$, and each pair with one job in each half becomes a conflict with probability $q = 0.2$.
+The hidden split is guaranteed to have zero violations, so every instance has at least one feasible schedule.
+The expected number of conflicts is $q \lfloor n/2 \rfloor \lceil n/2 \rceil$, for example 5 at $n = 10$ and 12.8 at $n = 16$.
+The runtimes are drawn independently of the hidden split, so it is not a balanced schedule; the solver still has to trade balance against conflicts.
+
+\subsection{Cost function and cost Hamiltonian}
+
+The cost function combines the balance objective with a penalty for conflicts:
+\begin{equation}
+  C(z) = \Big( \sum_{i=1}^{n} w_i z_i \Big)^2 + \lambda \sum_{(i,j) \in E} z_i z_j .
+  \label{eq:cost}
+\end{equation}
+For a conflict edge, $z_i z_j = +1$ if both jobs are on the same node (a violation) and $-1$ otherwise.
+Summing over the edges gives $\sum_{(i,j)\in E} z_i z_j = 2V(z) - |E|$, so the second term equals $2\lambda V(z)$ up to a constant: each violated conflict adds $2\lambda$ to the cost.
+This term is an antiferromagnetic Ising model on $E$, the same structure as Max-Cut~\cite{farhi2014}.
+
+Expanding the square and using $z_i^2 = 1$ puts the cost in Ising form, with only pairwise terms:
+\begin{equation}
+  C(z) = \sum_{i} w_i^2 + \sum_{i<j} J_{ij}\, z_i z_j,
+  \qquad
+  J_{ij} = 2 w_i w_j + \lambda \, \mathbb{1}[(i,j) \in E].
+  \label{eq:ising}
+\end{equation}
+The balance term couples every pair of jobs, so the Ising graph is complete, with $n(n-1)/2$ couplings; conflicts strengthen the couplings on their edges.
+
+To obtain the cost Hamiltonian we replace each $z_i$ by the Pauli operator $Z_i$ acting on qubit $i$.
+Because $Z\lvert 0\rangle = +\lvert 0\rangle$ and $Z\lvert 1\rangle = -\lvert 1\rangle$, measuring bit $x_i = 0$ corresponds to $z_i = +1$ (node A) and $x_i = 1$ to $z_i = -1$ (node B).
+The Hamiltonian
+\begin{equation}
+  H_C = \frac{1}{s} \Big( \sum_i w_i^2 \, I + \sum_{i<j} J_{ij}\, Z_i Z_j \Big)
+  \label{eq:hamiltonian}
+\end{equation}
+is diagonal in the computational basis, and its eigenvalue on $\lvert x \rangle$ is exactly $C(z)/s$.
+Finding the lowest-energy basis state of $H_C$ is therefore the same as finding the best schedule.
+In the QAOA circuit each term $J_{ij} Z_i Z_j$ becomes one $ZZ$ phase gate per layer, so a layer contains $n(n-1)/2$ two-qubit gates.
+The constant term does not change which schedule is best and adds no gates.
+
+\subsection{Normalisation}
+\label{sec:normalisation}
+
+We rescale twice before building the circuit.
+
+\begin{enumerate}
+  \item \textbf{Runtimes} are divided by the largest runtime, $w_i = \tilde w_i / \max_k \tilde w_k$, so $w_i \in (0,1]$.
+  Raw runtimes reach the hundreds, which would make $J_{ij}$ of order $10^4$.
+  \item \textbf{The Hamiltonian} is divided by $s = \max_{i<j} |J_{ij}|$, so that its largest coupling is exactly 1.
+\end{enumerate}
+
+Neither step changes which schedule is optimal; both change only the scale of the energies.
+The scale matters for QAOA because the cost layer applies $e^{-i\gamma H_C}$, which rotates each term by an angle $\gamma J_{ij}$.
+With large couplings, a tiny change in $\gamma$ produces a large change in phase, and the energy landscape over $\gamma$ oscillates so quickly that the classical optimiser cannot follow it.
+Fixing the largest coupling at 1 gives every instance and every problem size the same $\gamma$ scale, so angle bounds, initial guesses and transferred angles (Section~\ref{sec:method}) mean the same thing across instances.
+Energies measured on the circuit are converted back to costs with $C = s\,\langle H_C \rangle$ before any metric is computed.
+
+One side effect of heavy-tailed runtimes is that the couplings between short jobs are very small: at $n = 16$ the median instance has a smallest coupling of about $0.002$ after scaling.
+Schedules that differ only in where they place short jobs therefore differ only slightly in energy, which makes them hard to tell apart at low circuit depth.
+We return to this in Section~\ref{sec:discussion}.
+
+\subsection{Mirror symmetry and degenerate optima}
+\label{sec:symmetry}
+
+Swapping the labels of the two nodes, $z \mapsto -z$, never changes the cost, because Eq.~\eqref{eq:ising} contains only products $z_i z_j$.
+Every schedule therefore has a mirror image with the same cost, and the optimum is at least two-fold degenerate.
+In operator terms, $H_C$ commutes with the global flip $X^{\otimes n}$.
+The QAOA mixer $\sum_i X_i$ and the initial state $\lvert + \rangle^{\otimes n}$ are also symmetric under this flip, so the QAOA state gives every bitstring and its mirror exactly the same probability.
+This gives a simple check on the implementation: sampled counts should be mirror-symmetric up to shot noise.
+
+The degeneracy can be larger than two, because integer runtimes often allow several different balanced splits.
+At $\lambda = 0.5$, between 20\,\% and 45\,\% of our instances (depending on $n$) have more than two optimal bitstrings.
+We therefore define the success probability $P(\text{opt})$ as the total probability of \emph{all} optimal bitstrings found by brute force, not just one mirror pair.
+
+The symmetry could be removed by fixing $z_0 = +1$ and using $n - 1$ qubits.
+We keep one qubit per job so that bitstrings map directly to schedules and qubit counts match job counts in the scaling results.
+
+\subsection{Choosing the penalty weight $\lambda$}
+\label{sec:lambda}
+
+The penalty weight sets the exchange rate between balance and conflicts.
+If $\lambda$ is too small, the cheapest schedule may accept a conflict to gain a little balance.
+If $\lambda$ is too large, the conflict couplings dominate $s$, and after scaling the balance couplings become small relative to the largest coupling, which makes the balance part of the landscape harder for QAOA to resolve.
+We therefore choose the \emph{smallest} $\lambda$ that reliably removes conflicts.
+
+We swept $\lambda \in \{0.1, 0.5, 1, 2, 5\}$ on 20 instances at each size $n \in \{6, 8, \dots, 16\}$, solving each instance exactly by brute force.
+The rule was: choose the smallest $\lambda$ for which the optimal schedule has zero violations on at least 90\,\% of instances at every size.
+Table~\ref{tab:lambda} shows the result.
+
+\begin{table}[h]
+  \centering
+  \caption{Fraction of instances whose optimal schedule has zero conflict violations (20 instances per cell).}
+  \label{tab:lambda}
+  \begin{tabular}{@{}lcccccc@{}}
+    \toprule
+    $\lambda$ & $n=6$ & $n=8$ & $n=10$ & $n=12$ & $n=14$ & $n=16$ \\
+    \midrule
+    0.1 & 75\,\% & 90\,\% & 90\,\% & 80\,\% & 65\,\% & 65\,\% \\
+    0.5 & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 95\,\% & 100\,\% \\
+    1, 2, 5 & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+We use $\lambda = 0.5$ for all experiments.
+At $\lambda = 0.1$ the optimiser frequently trades a conflict for better balance, especially at larger $n$, where more conflicts are available to trade.
+Enforcing conflicts has a modest cost: at $\lambda = 0.5$ the optimal makespan is on average 4--9\,\% longer than the best makespan with conflicts ignored, depending on $n$.
+% TODO(team): the sweep stops at n = 16, but E1 runs to n = 20 and E5 to n = 28.
+% A spot check with the same rule found zero-violation optima on 9/10 instances at n = 20 and 3/4 at n = 24,
+% and in results/baselines_timing.csv the exact (CP-SAT) optimum has 1 violation at n = 24 and n = 25.
+% Either extend the sweep to n = 20, 24 and keep 0.5, or switch to lambda = 1 before the freeze.
+
+\subsection{Worked example}
+
+Consider three jobs with runtimes $\tilde w = (1, 1, 2)$, so $w = (0.5, 0.5, 1)$, one conflict $E = \{(0,1)\}$, and $\lambda = 1$ (chosen here for round numbers).
+Eq.~\eqref{eq:ising} gives $J_{01} = 2(0.25) + 1 = 1.5$ and $J_{02} = J_{12} = 2(0.5)(1) = 1$, so $s = 1.5$ and
+\[
+  H_C = I + Z_0 Z_1 + \tfrac{2}{3} Z_0 Z_2 + \tfrac{2}{3} Z_1 Z_2 .
+\]
+Table~\ref{tab:example} lists all eight schedules.
+
+\begin{table}[h]
+  \centering
+  \caption{All schedules for the worked example. Bit $i$ is job $i$; 0 = node A, 1 = node B. Each row is a mirror pair: the node columns describe the first bitstring, and the second swaps A and B.}
+  \label{tab:example}
+  \begin{tabular}{@{}cccccc@{}}
+    \toprule
+    Bits $x_0x_1x_2$ & Node A & Node B & $C(z)$ & Violations & Makespan \\
+    \midrule
+    000, 111 & all jobs & -- & 5 & 1 & 4 \\
+    001, 110 & 0, 1 & 2 & 1 & 1 & 2 \\
+    010, 101 & 0, 2 & 1 & \textbf{0} & 0 & 3 \\
+    011, 100 & 0 & 1, 2 & \textbf{0} & 0 & 3 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Without the conflict, the best schedule would put jobs 0 and 1 together against job 2, giving a perfect split with makespan 2.
+The conflict forbids this, and the cost function instead selects the schedules with makespan 3 that keep jobs 0 and 1 apart.
+The example also shows both effects from Section~\ref{sec:symmetry}: each schedule appears with its mirror image, and two different pairs of schedules share the minimum, so there are four optimal bitstrings.
