@@ -70,7 +70,7 @@ def summarise(rows, sizes):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--n", type=int, nargs="+", default=[6, 8, 10, 12, 14, 16])
+    parser.add_argument("--n", type=int, nargs="+", default=[6, 8, 10, 12, 14, 16, 18, 20, 22, 24])
     parser.add_argument("--count", type=int, default=20)
     parser.add_argument("--base-seed", type=int, default=0)
     parser.add_argument("--out", default=str(ROOT / "results" / "lambda_sweep.csv"))

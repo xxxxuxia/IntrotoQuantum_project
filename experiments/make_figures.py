@@ -144,16 +144,19 @@ def load_lambda_sweep():
 def fig_lambda_sweep(by_lam_n):
     sizes = sorted({n for (_, n) in by_lam_n})
     lambdas = sorted({lam for (lam, _) in by_lam_n})
-    size_colors = list(SLOTS.values())
+    # Sizes are ordered, so shade them light (small n) to dark (large n) on one
+    # hue instead of cycling the categorical slots, which repeat past 6 sizes.
+    ramp = plt.get_cmap("Blues")
+    size_colors = [ramp(0.35 + 0.65 * i / max(1, len(sizes) - 1)) for i in range(len(sizes))]
     # Several sizes land on identical fractions at every lambda (e.g. n=8 and
     # n=10 here) and would otherwise sit perfectly hidden under each other --
     # distinct marker shapes keep every series visible even when fully overlapped.
-    markers = ["o", "s", "^", "D", "v", "P", "X"]
+    markers = ["o", "s", "^", "D", "v", "P", "X", "p", "h", "*"]
 
     fig, ax = plt.subplots(figsize=(7, 4.5), dpi=150)
     for i, n in enumerate(sizes):
         y = [sum(by_lam_n[(lam, n)]) / len(by_lam_n[(lam, n)]) for lam in lambdas]
-        ax.plot(lambdas, y, color=size_colors[i % len(size_colors)], linewidth=2,
+        ax.plot(lambdas, y, color=size_colors[i], linewidth=2,
                  marker=markers[i % len(markers)], markersize=6,
                  markeredgecolor=SURFACE, markeredgewidth=0.8,
                  solid_capstyle="round", solid_joinstyle="round", label=f"n={n}")

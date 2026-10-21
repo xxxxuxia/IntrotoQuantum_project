@@ -131,7 +131,7 @@ The QAOA mixer $\sum_i X_i$ and the initial state $\lvert + \rangle^{\otimes n}$
 This gives a simple check on the implementation: sampled counts should be mirror-symmetric up to shot noise.
 
 The degeneracy can be larger than two, because integer runtimes often allow several different balanced splits.
-At $\lambda = 0.5$, between 20\,\% and 45\,\% of our instances (depending on $n$) have more than two optimal bitstrings.
+At $\lambda = 0.5$, between 10\,\% and 45\,\% of our instances (depending on $n$) have more than two optimal bitstrings.
 We therefore define the success probability $P(\text{opt})$ as the total probability of \emph{all} optimal bitstrings found by brute force, not just one mirror pair.
 
 The symmetry could be removed by fixing $z_0 = +1$ and using $n - 1$ qubits.
@@ -145,7 +145,7 @@ If $\lambda$ is too small, the cheapest schedule may accept a conflict to gain a
 If $\lambda$ is too large, the conflict couplings dominate $s$, and after scaling the balance couplings become small relative to the largest coupling, which makes the balance part of the landscape harder for QAOA to resolve.
 We therefore choose the \emph{smallest} $\lambda$ that reliably removes conflicts.
 
-We swept $\lambda \in \{0.1, 0.5, 1, 2, 5\}$ on 20 instances at each size $n \in \{6, 8, \dots, 16\}$, solving each instance exactly by brute force.
+We swept $\lambda \in \{0.1, 0.5, 1, 2, 5\}$ on 20 instances at each size $n \in \{6, 8, \dots, 24\}$, solving each instance exactly by brute force.
 The rule was: choose the smallest $\lambda$ for which the optimal schedule has zero violations on at least 90\,\% of instances at every size.
 Table~\ref{tab:lambda} shows the result.
 
@@ -153,24 +153,29 @@ Table~\ref{tab:lambda} shows the result.
   \centering
   \caption{Fraction of instances whose optimal schedule has zero conflict violations (20 instances per cell).}
   \label{tab:lambda}
-  \begin{tabular}{@{}lcccccc@{}}
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}lcccccccccc@{}}
     \toprule
-    $\lambda$ & $n=6$ & $n=8$ & $n=10$ & $n=12$ & $n=14$ & $n=16$ \\
+    $\lambda$ & $n=6$ & $8$ & $10$ & $12$ & $14$ & $16$ & $18$ & $20$ & $22$ & $24$ \\
     \midrule
-    0.1 & 75\,\% & 90\,\% & 90\,\% & 80\,\% & 65\,\% & 65\,\% \\
-    0.5 & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 95\,\% & 100\,\% \\
-    1, 2, 5 & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% \\
+    0.1 & 75\,\% & 90\,\% & 90\,\% & 80\,\% & 65\,\% & 65\,\% & 80\,\% & 75\,\% & 55\,\% & 50\,\% \\
+    0.5 & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 95\,\% & 100\,\% & 90\,\% & 95\,\% & 90\,\% & 90\,\% \\
+    1 & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 95\,\% & 95\,\% & 90\,\% \\
+    2 & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 95\,\% \\
+    5 & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% & 100\,\% \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 We use $\lambda = 0.5$ for all experiments.
 At $\lambda = 0.1$ the optimiser frequently trades a conflict for better balance, especially at larger $n$, where more conflicts are available to trade.
-Enforcing conflicts has a modest cost: at $\lambda = 0.5$ the optimal makespan is on average 4--9\,\% longer than the best makespan with conflicts ignored, depending on $n$.
-% TODO(team): the sweep stops at n = 16, but E1 runs to n = 20 and E5 to n = 28.
-% A spot check with the same rule found zero-violation optima on 9/10 instances at n = 20 and 3/4 at n = 24,
-% and in results/baselines_timing.csv the exact (CP-SAT) optimum has 1 violation at n = 24 and n = 25.
-% Either extend the sweep to n = 20, 24 and keep 0.5, or switch to lambda = 1 before the freeze.
+Enforcing conflicts has a modest cost: at $\lambda = 0.5$ the optimal makespan is on average 4--10\,\% longer than the best makespan with conflicts ignored, depending on $n$.
+
+At $\lambda = 0.5$ a few instances (at most 10\,\% per size, mostly at $n \geq 18$) still have an optimum that accepts a conflict, because doing so buys a much better balance.
+Raising $\lambda$ does little about these cases: the two failing instances at $n = 24$ fail at $\lambda = 1$ as well, and one still fails at $\lambda = 2$, while every increase shrinks the balance couplings after scaling.
+We therefore keep $\lambda = 0.5$ and report the number of violations as a separate metric for every method, so a schedule that trades a conflict for balance is always visible.
+With 20 instances per size, $n = 18$, $22$ and $24$ meet the 90\,\% threshold exactly, so the rule's verdict at those sizes is sensitive to the instance sample.
 
 \subsection{Worked example}
 
