@@ -1,3 +1,6 @@
 numpy>=1.24
+scipy>=1.10
+matplotlib>=3.7
 pytest
 ortools>=9.0
+cudaq>=0.16

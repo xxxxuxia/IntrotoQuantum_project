@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 from collections import defaultdict
 
+import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -176,6 +177,59 @@ def fig_lambda_sweep(by_lam_n):
     plt.close(fig)
 
 
+def load_e1():
+    """{n: {p: [row, ...]}} plus a p = 0 entry per instance: the uniform state |+>^n,
+    i.e. random sampling, with <C> = sum(w^2) and P(opt) = #optima / 2^n."""
+    sys.path.insert(0, str(ROOT / "src"))
+    import problem as P
+
+    rows = list(csv.DictReader(open(ROOT / "results" / "E1_depth.csv")))
+    by_n = defaultdict(lambda: defaultdict(list))
+    for r in rows:
+        by_n[int(r["n"])][int(r["p"])].append(
+            {"approx_ratio": float(r["approx_ratio"]), "p_opt": float(r["p_opt"])})
+    for n in by_n:
+        for seed in sorted({int(r["seed"]) for r in rows if int(r["n"]) == n}):
+            inst = P.generate_instance(n, seed)
+            ref = P.brute_force(inst)
+            mean_c = (P.normalized_weights(inst) ** 2).sum()
+            by_n[n][0].append({
+                "approx_ratio": float(P.approx_ratio(mean_c, ref["c_min"], ref["c_max"])),
+                "p_opt": len(ref["opt_states"]) / 2 ** n,
+            })
+    return by_n
+
+
+def _fig_e1(by_n, key, ylabel, title, filename, log=False):
+    sizes = sorted(by_n)
+    ramp = plt.get_cmap("Blues")
+    colors = [ramp(0.35 + 0.65 * i / max(1, len(sizes) - 1)) for i in range(len(sizes))]
+    markers = ["o", "s", "^", "D", "v", "P", "X"]
+
+    fig, ax = plt.subplots(figsize=(7, 4.5), dpi=150)
+    for i, n in enumerate(sizes):
+        ps = sorted(by_n[n])
+        vals = [np.array([r[key] for r in by_n[n][p]]) for p in ps]
+        mean = np.array([v.mean() for v in vals])
+        se = np.array([v.std(ddof=1) / np.sqrt(len(v)) if len(v) > 1 else 0.0 for v in vals])
+        ax.fill_between(ps, mean - se, mean + se, color=colors[i], alpha=0.18, linewidth=0)
+        ax.plot(ps, mean, color=colors[i], linewidth=2, marker=markers[i % len(markers)],
+                markersize=6, markeredgecolor=SURFACE, markeredgewidth=0.8,
+                solid_capstyle="round", solid_joinstyle="round", label=f"n={n}")
+    if log:
+        ax.set_yscale("log")
+    ax.set_xticks(range(0, max(max(by_n[n]) for n in sizes) + 1))
+    ax.set_xticklabels(["0\n(random)"] + [str(p) for p in ax.get_xticks()[1:]])
+    ax.set_xlabel("QAOA depth p (shaded: ±1 standard error over instances)")
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, color=INK, fontsize=11)
+    _style_axes(ax)
+    _legend(ax)
+    fig.tight_layout()
+    fig.savefig(FIGURES / filename, facecolor=SURFACE, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     FIGURES.mkdir(exist_ok=True)
     by_method = load_baselines()
@@ -183,7 +237,15 @@ def main():
     fig_wall_time(by_method)
     fig_violations(by_method)
     fig_lambda_sweep(load_lambda_sweep())
-    print(f"wrote 4 figures to {FIGURES}")
+    count = 4
+    if (ROOT / "results" / "E1_depth.csv").exists():
+        by_n = load_e1()
+        _fig_e1(by_n, "approx_ratio", "approx. ratio of <C> (1.0 = optimal)",
+                "QAOA gets closer to the optimum with every layer", "E1_approx_ratio.png")
+        _fig_e1(by_n, "p_opt", "P(optimal schedule) per shot",
+                "Probability of sampling an optimal schedule", "E1_p_opt.png", log=True)
+        count += 2
+    print(f"wrote {count} figures to {FIGURES}")
 
 
 if __name__ == "__main__":
