@@ -1,0 +1,6 @@
+GPU: NVIDIA A40 (48 GB), target nvidia (fp32)
+wall time per size (10 instances x p = 1-6):
+n14  4.4 min
+n16  5.7 min
+n18  6.9 min
+n20  10.0 min
