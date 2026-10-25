@@ -1,0 +1,92 @@
+% Section 2 -- Background (P2)
+% Needs: \usepackage{amsmath, amssymb, booktabs}
+
+\section{Background}
+\label{sec:background}
+
+This section introduces the three ideas the rest of the report builds on: Ising formulations of optimisation problems, the QAOA algorithm, and the cost of simulating quantum circuits on classical hardware.
+
+\subsection{Ising models and QUBO}
+\label{sec:ising}
+
+Many combinatorial problems ask for the best assignment of $n$ yes/no decisions.
+A common way to write them is as a \emph{quadratic unconstrained binary optimisation} (QUBO) problem: minimise $x^{\mathsf T} Q x$ over binary vectors $x \in \{0, 1\}^n$, for some matrix $Q$.
+Substituting $x_i = (1 - z_i)/2$ turns a QUBO into an equivalent \emph{Ising model} over spins $z_i \in \{+1, -1\}$:
+\begin{equation}
+  C(z) = c_0 + \sum_i h_i z_i + \sum_{i<j} J_{ij}\, z_i z_j ,
+  \label{eq:ising-general}
+\end{equation}
+where the $h_i$ are local fields, the $J_{ij}$ are couplings between pairs of spins, and $c_0$ is a constant.
+Lucas~\cite{lucas2014} gives Ising formulations of many NP-hard problems, including number partitioning, Max-Cut and graph colouring.
+Constraints are usually added as penalty terms that raise the cost of any assignment that breaks them, which is how we handle conflicting jobs in Section~\ref{sec:formulation}.
+
+The Ising form maps directly onto qubits.
+Replacing each spin $z_i$ by the Pauli operator $Z_i$ gives a Hamiltonian $H_C$ that is diagonal in the computational basis.
+Its eigenvalue on the basis state $\lvert x \rangle$ is exactly the cost of the corresponding assignment, with $z_i = 1 - 2x_i$.
+The ground state of $H_C$, its lowest-energy basis state, is therefore the optimal solution, and solving the problem means preparing and measuring a state close to it.
+
+\subsection{The Quantum Approximate Optimization Algorithm}
+\label{sec:qaoa-background}
+
+QAOA~\cite{farhi2014} prepares a low-energy state of $H_C$ with a circuit of $p$ layers.
+It starts from the uniform superposition $\lvert + \rangle^{\otimes n}$, in which every one of the $2^n$ assignments is equally likely.
+Each layer applies two operations:
+\begin{itemize}
+  \item a \emph{cost layer} $U_C(\gamma) = e^{-i\gamma H_C}$, which multiplies each basis state by a phase that depends on its cost; and
+  \item a \emph{mixer layer} $U_M(\beta) = e^{-i\beta H_M}$ with $H_M = \sum_i X_i$, which rotates every qubit about the $x$-axis and so mixes amplitude between assignments that differ by flipping one job.
+\end{itemize}
+The cost layer alone would not change any measurement probabilities, because it only changes phases.
+The mixer turns those phase differences into amplitude differences, so that, with well-chosen angles, low-cost assignments become more likely.
+With $p$ layers the circuit prepares
+\begin{equation}
+  \lvert \boldsymbol\gamma, \boldsymbol\beta \rangle
+  = U_M(\beta_p)\, U_C(\gamma_p) \cdots U_M(\beta_1)\, U_C(\gamma_1)\, \lvert + \rangle^{\otimes n},
+\end{equation}
+which has $2p$ real parameters $\boldsymbol\gamma = (\gamma_1, \dots, \gamma_p)$ and $\boldsymbol\beta = (\beta_1, \dots, \beta_p)$.
+
+QAOA is a \emph{hybrid} algorithm.
+The quantum circuit estimates the energy $\langle H_C \rangle = \langle \boldsymbol\gamma, \boldsymbol\beta \rvert H_C \lvert \boldsymbol\gamma, \boldsymbol\beta \rangle$, and a classical optimiser adjusts the angles to lower it.
+Once the angles are optimised, the circuit is measured many times, and each measurement gives one candidate schedule.
+
+As $p$ grows, QAOA can imitate a slow adiabatic evolution, which is guaranteed to reach the ground state, so the result can only improve with depth when the angles are optimised well~\cite{farhi2014}.
+At small $p$ the algorithm is approximate, and its quality depends on two practical issues.
+First, deeper circuits contain more gates, which matters for both simulation cost and hardware noise.
+Second, the energy as a function of the angles has many local minima, so the starting angles strongly affect the result.
+Zhou et al.~\cite{zhou2020} proposed INTERP, which builds starting angles for depth $p + 1$ by interpolating the optimised angles from depth $p$.
+Section~\ref{sec:method} describes how we use it.
+
+\subsection{Simulating quantum circuits on GPUs}
+\label{sec:simulation}
+
+A classical statevector simulator stores the full quantum state of $n$ qubits as $2^n$ complex amplitudes.
+Table~\ref{tab:memory} shows how fast this grows.
+In single precision (two 32-bit floats per amplitude, 8 bytes in total), a 30-qubit state needs 8\,GiB, and every extra qubit doubles that.
+Double precision doubles the memory again.
+
+\begin{table}[h]
+  \centering
+  \caption{Memory needed to store an $n$-qubit statevector.}
+  \label{tab:memory}
+  \begin{tabular}{@{}lccccc@{}}
+    \toprule
+    Qubits $n$ & 20 & 24 & 28 & 30 & 32 \\
+    \midrule
+    Single precision (8 B per amplitude) & 8\,MiB & 128\,MiB & 2\,GiB & 8\,GiB & 32\,GiB \\
+    Double precision (16 B per amplitude) & 16\,MiB & 256\,MiB & 4\,GiB & 16\,GiB & 64\,GiB \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Time grows just as fast.
+Applying one gate updates every amplitude, so each gate costs work proportional to $2^n$.
+A QAOA layer for our problem contains one $ZZ$ interaction for every pair of jobs, each built from three gates, plus one rotation per qubit: 590 gates per layer at $n = 20$.
+Optimising the angles then needs hundreds of circuit evaluations.
+This work consists of many simple, independent updates to a large array, which suits GPUs: they have thousands of cores and much higher memory bandwidth than CPUs.
+CUDA-Q~\cite{cudaq} lets the same circuit run on a CPU simulator (target \texttt{qpp-cpu}) or a GPU simulator (target \texttt{nvidia}, built on NVIDIA's cuStateVec library) by changing one setting, which makes a direct comparison possible.
+
+Two points about simulation are important for interpreting our results.
+First, a GPU speeds up the \emph{simulation} of QAOA, not the algorithm itself.
+The cost still doubles with every qubit, so a faster simulator adds only a few qubits to the largest problem we can study.
+Second, simulating noise is far more expensive.
+A noisy state is described by a density matrix with $4^n$ entries instead of $2^n$, so a 12-qubit noisy simulation stores as many numbers as a 24-qubit noiseless one.
+This is why our noise study is limited to small problems.

@@ -1,0 +1,66 @@
+% Section 1 -- Introduction & Motivation (P2)
+% Numbers in the findings paragraph come from results/E1_depth.csv and results/baselines_timing.csv.
+
+\section{Introduction}
+\label{sec:intro}
+
+High-performance computing (HPC) clusters run many jobs at once, and a scheduler decides which job runs on which compute node.
+A poor placement leaves one node overloaded while another sits idle, so every job on the busy node finishes late.
+Placement also has to respect interactions between jobs: two memory-bound jobs placed on the same node compete for memory bandwidth and slow each other down, so schedulers let users declare \emph{anti-affinity} rules that keep such jobs apart.
+Finding the best placement is a combinatorial problem.
+Even the simplest version, splitting $n$ jobs between two nodes so that both finish at the same time, has $2^n$ possible placements and is NP-hard in general.
+
+Quantum computers have been proposed as a new tool for problems of this kind.
+The Quantum Approximate Optimization Algorithm (QAOA)~\cite{farhi2014} is one of the leading candidates for near-term quantum devices~\cite{preskill2018}.
+It works in three steps.
+The problem is first rewritten as an energy function, an Ising Hamiltonian, whose lowest-energy state is the best solution~\cite{lucas2014}.
+A short, parameterised quantum circuit then prepares a quantum state that favours low-energy solutions.
+Finally, a classical optimiser tunes the circuit's parameters.
+Whether QAOA can ever beat the best classical methods is still an open question.
+
+Large enough quantum hardware is not yet available to us, so we study QAOA by simulating it on classical computers.
+Simulation is itself an HPC problem: storing the state of $n$ qubits takes $2^n$ complex numbers, so each extra qubit doubles both the memory and the work.
+We use graphics processing units (GPUs) through NVIDIA's CUDA-Q platform~\cite{cudaq} to reach problem sizes that would be slow or impossible on a CPU.
+HPC therefore appears twice in this project: as the application we schedule for, and as the tool that makes the study possible.
+
+\subsection{Research questions}
+
+We study a simplified version of the scheduling problem: place $n$ jobs on two nodes so that the workloads are as balanced as possible, while keeping conflicting jobs on different nodes.
+We ask four questions.
+
+\begin{enumerate}
+  \item[\textbf{RQ1}] \textbf{Solution quality.} How close does QAOA get to the optimal schedule, and does it improve as the circuit gets deeper?
+  \item[\textbf{RQ2}] \textbf{Classical comparison.} How does QAOA compare with classical methods such as simulated annealing and standard partitioning heuristics?
+  \item[\textbf{RQ3}] \textbf{Noise robustness.} How much do realistic hardware errors degrade QAOA's performance?
+  \item[\textbf{RQ4}] \textbf{HPC scalability.} How much faster are GPUs than CPUs for simulating these circuits, and how large a problem can we reach?
+\end{enumerate}
+% TODO(team): RQ3 needs E6 and RQ4 needs E4. If either experiment is dropped, move that question to Limitations.
+
+\subsection{Scope}
+
+This project does not aim to show that quantum computers beat classical ones.
+At the problem sizes that can be simulated, classical methods win easily, and we show this directly.
+Instead, we aim to provide three things:
+\begin{enumerate}
+  \item a correct formulation of a real-world scheduling problem for a quantum algorithm;
+  \item a solid, reproducible implementation, in which every number and figure is produced by a script from a fixed random seed; and
+  \item an honest analysis of where QAOA works, where it struggles, and why.
+\end{enumerate}
+
+\subsection{Summary of findings}
+% TODO(team): replace with the 4-6 key findings agreed at the W11 Monday meeting.
+
+QAOA's solutions improve steadily with circuit depth.
+On the median instance, QAOA's average output reaches 83--87\,\% of the way from the worst to the best schedule with one layer, and 94--97\,\% with six layers, for 8 to 20 jobs.
+It also finds an exact optimum far more often than random guessing.
+With six layers, 14\,\% of its samples are optimal at $n = 10$, about 34 times the rate of random guessing.
+At $n = 20$ only 1.4\,\% of samples are optimal, but random guessing is about 7{,}600 times less likely to succeed.
+The advantage over random guessing grows with problem size, while the absolute success rate falls.
+Classical methods are much stronger at these sizes: an exact solver (CP-SAT) finds and proves the optimum for 28 jobs in about 0.01 seconds.
+
+\subsection{Outline}
+
+Section~\ref{sec:background} introduces Ising models, QAOA and GPU simulation.
+Section~\ref{sec:formulation} turns the scheduling problem into a Hamiltonian.
+Sections~\ref{sec:method} and~\ref{sec:implementation} describe the QAOA method and its CUDA-Q implementation, and Section~\ref{sec:setup} describes the experiments.
+Section~\ref{sec:results} presents the results, Section~\ref{sec:discussion} discusses them and their limitations, and Section~\ref{sec:conclusion} concludes.
