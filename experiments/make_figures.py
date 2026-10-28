@@ -230,6 +230,40 @@ def _fig_e1(by_n, key, ylabel, title, filename, log=False):
     plt.close(fig)
 
 
+def fig_qaoa_vs_baselines(by_method, by_n):
+    """The headline RQ2 chart: best-depth QAOA against all four classical baselines.
+
+    QAOA only has E1 data at n=8..20 (GPU runs for 14-20 haven't reached 22-28
+    yet -- that's E5); the baselines go to n=28. Both ranges are drawn as-is
+    rather than truncated, so the chart is honest about what's covered so far.
+    """
+    fig, ax = plt.subplots(figsize=(7, 4.5), dpi=150)
+    for method in METHOD_ORDER:
+        rs = by_method[method]
+        x = [int(r["n"]) for r in rs]
+        y = [float(r["approx_ratio"]) for r in rs]
+        ax.plot(x, y, color=METHOD_COLOR[method], linewidth=2, marker="o", markersize=5,
+                 solid_capstyle="round", solid_joinstyle="round", label=METHOD_LABEL[method])
+
+    p_best = max(p for n in by_n for p in by_n[n] if p > 0)
+    sizes = sorted(by_n)
+    x_q = [n for n in sizes if p_best in by_n[n]]
+    y_q = [np.mean([r["approx_ratio"] for r in by_n[n][p_best]]) for n in x_q]
+    ax.plot(x_q, y_q, color=SLOTS["magenta"], linewidth=2.5, marker="D", markersize=7,
+             markeredgecolor=SURFACE, markeredgewidth=0.8,
+             solid_capstyle="round", solid_joinstyle="round", label=f"QAOA (p={p_best})")
+
+    ax.set_ylim(0.75, 1.03)
+    ax.set_xlabel("number of jobs (n)")
+    ax.set_ylabel("approx. ratio (1.0 = optimal)")
+    ax.set_title("QAOA vs classical baselines", color=INK, fontsize=11)
+    _style_axes(ax)
+    _legend(ax)
+    fig.tight_layout()
+    fig.savefig(FIGURES / "qaoa_vs_baselines.png", facecolor=SURFACE, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     FIGURES.mkdir(exist_ok=True)
     by_method = load_baselines()
@@ -244,7 +278,8 @@ def main():
                 "QAOA gets closer to the optimum with every layer", "E1_approx_ratio.png")
         _fig_e1(by_n, "p_opt", "P(optimal schedule) per shot",
                 "Probability of sampling an optimal schedule", "E1_p_opt.png", log=True)
-        count += 2
+        fig_qaoa_vs_baselines(by_method, by_n)
+        count += 3
     print(f"wrote {count} figures to {FIGURES}")
 
 
