@@ -159,16 +159,21 @@ def cp_sat_solve(inst, time_limit_s=10, num_workers=8):
 
 
 def reference_optimum(inst, cp_sat_time_limit_s=10):
-    """Ground truth (c_min, c_max) for approx_ratio, valid for any n.
+    """Ground truth (c_min, c_max, opt_states) for approx_ratio/p_opt, valid for any n.
 
     Uses problem.brute_force (exact, exhaustive) up to n=24 as the team agreed;
     above that, c_max has a closed form (problem.c_max_exact) regardless of n,
     and c_min falls back to CP-SAT, which should be able to prove optimality
     well past n=24 for instances of this size/structure (verified up to n=30
-    during development).
+    during development). opt_states is every optimal bitstring for n<=24 (from
+    brute_force), or the one CP-SAT found plus its spin-flip mirror above that
+    -- cost is invariant under flipping every spin, so the mirror is optimal too.
     """
     if inst["n"] <= P.BRUTE_FORCE_MAX_N:
         bf = P.brute_force(inst)
-        return {"c_min": bf["c_min"], "c_max": bf["c_max"], "method": "brute_force", "optimal": True}
+        return {"c_min": bf["c_min"], "c_max": bf["c_max"], "opt_states": bf["opt_states"],
+                "method": "brute_force", "optimal": True}
     r = cp_sat_solve(inst, time_limit_s=cp_sat_time_limit_s)
-    return {"c_min": r["cost"], "c_max": P.c_max_exact(inst), "method": "cp_sat", "optimal": r["optimal"]}
+    mirror = "".join("1" if b == "0" else "0" for b in r["bitstring"])
+    return {"c_min": r["cost"], "c_max": P.c_max_exact(inst), "opt_states": [r["bitstring"], mirror],
+            "method": "cp_sat", "optimal": r["optimal"]}
