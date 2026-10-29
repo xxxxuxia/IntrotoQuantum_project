@@ -264,6 +264,89 @@ def fig_qaoa_vs_baselines(by_method, by_n):
     plt.close(fig)
 
 
+E2_ORDER = ["interp", "transfer", "transfer_noopt", "random5"]
+E2_LABEL = {"interp": "INTERP", "transfer": "transfer + optimise",
+            "transfer_noopt": "transfer, no optimisation", "random5": "best of 5 random"}
+E2_COLOR = dict(zip(E2_ORDER, [SLOTS["blue"], SLOTS["orange"], SLOTS["aqua"], SLOTS["yellow"]]))
+# INTERP and transfer often land on the same optimum, so shapes keep both visible.
+E2_MARKER = dict(zip(E2_ORDER, ["o", "D", "^", "s"]))
+
+
+def fig_e2(path):
+    """Initialisation strategies at the deepest p: quality (left) and optimiser cost (right)."""
+    rows = list(csv.DictReader(open(path)))
+    p = max(int(r["p"]) for r in rows)
+    by = defaultdict(lambda: defaultdict(list))
+    for r in rows:
+        if int(r["p"]) == p:
+            by[r["init"]][int(r["n"])].append(r)
+
+    fig, (ax_r, ax_e) = plt.subplots(1, 2, figsize=(10, 4.2), dpi=150)
+    all_sizes = sorted({n for init in by for n in by[init]})
+    for init in E2_ORDER:
+        sizes = sorted(by[init])
+        if not sizes:
+            continue
+        style = dict(color=E2_COLOR[init], linewidth=2, marker=E2_MARKER[init], markersize=7,
+                     markeredgecolor=SURFACE, markeredgewidth=0.8, label=E2_LABEL[init])
+        ax_r.plot(sizes, [np.mean([float(r["approx_ratio"]) for r in by[init][n]]) for n in sizes], **style)
+        if init != "transfer_noopt":
+            ax_e.plot(sizes, [np.mean([float(r["n_evals"]) for r in by[init][n]]) for n in sizes], **style)
+    ax_r.set_ylabel("approx. ratio of <C> (1.0 = optimal)")
+    ax_r.set_title(f"Quality at p = {p}", color=INK, fontsize=11)
+    ax_e.set_yscale("log")
+    ax_e.set_ylabel("circuit evaluations used by COBYLA")
+    ax_e.set_title(f"Optimiser cost at p = {p}", color=INK, fontsize=11)
+    for ax in (ax_r, ax_e):
+        ax.set_xticks(all_sizes)
+        ax.set_xlabel("number of jobs (n)")
+        _style_axes(ax)
+    # The cost panel has no line for transfer_noopt (it makes 0 evaluations),
+    # so the shared legend comes from the quality panel.
+    handles, labels = ax_r.get_legend_handles_labels()
+    ax_e.legend(handles, labels, frameon=False, labelcolor=INK_SECONDARY, fontsize=9,
+                loc="upper left", bbox_to_anchor=(1.01, 1.0), borderaxespad=0)
+    fig.tight_layout()
+    fig.savefig(FIGURES / "E2_init.png", facecolor=SURFACE, bbox_inches="tight")
+    plt.close(fig)
+
+
+def fig_e6(path):
+    """Noise sweep: approx. ratio vs depth, one line per error rate, one panel per n."""
+    rows = list(csv.DictReader(open(path)))
+    by = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    for r in rows:
+        by[int(r["n"])][float(r["noise"])][int(r["p"])].append(float(r["approx_ratio"]))
+    sizes = sorted(by)
+    levels = sorted({lvl for n in sizes for lvl in by[n]})
+    ramp = plt.get_cmap("Oranges")
+    colors = {lvl: ramp(0.35 + 0.65 * i / max(1, len(levels) - 1)) for i, lvl in enumerate(levels)}
+    markers = dict(zip(levels, ["o", "s", "^", "D", "v"]))
+
+    fig, axes = plt.subplots(1, len(sizes), figsize=(5 * len(sizes), 4.2), dpi=150,
+                             sharey=True, squeeze=False)
+    for ax, n in zip(axes[0], sizes):
+        for lvl in levels:
+            ps = sorted(by[n][lvl])
+            vals = [np.array(by[n][lvl][p]) for p in ps]
+            mean = np.array([v.mean() for v in vals])
+            se = np.array([v.std(ddof=1) / np.sqrt(len(v)) if len(v) > 1 else 0.0 for v in vals])
+            ax.fill_between(ps, mean - se, mean + se, color=colors[lvl], alpha=0.18, linewidth=0)
+            ax.plot(ps, mean, color=colors[lvl], linewidth=2, marker=markers[lvl], markersize=6,
+                    markeredgecolor=SURFACE, markeredgewidth=0.8,
+                    label="noiseless" if lvl == 0 else f"2-qubit error {lvl:g}")
+        ax.set_xticks(ps)
+        ax.set_xlabel("QAOA depth p")
+        ax.set_title(f"n = {n}", color=INK, fontsize=11)
+        _style_axes(ax)
+    axes[0][0].set_ylabel("approx. ratio of <C> (1.0 = optimal)")
+    _legend(axes[0][-1])
+    fig.suptitle("Depolarising noise: deeper circuits stop paying off", color=INK, fontsize=11)
+    fig.tight_layout()
+    fig.savefig(FIGURES / "E6_noise.png", facecolor=SURFACE, bbox_inches="tight")
+    plt.close(fig)
+
+
 def main():
     FIGURES.mkdir(exist_ok=True)
     by_method = load_baselines()
@@ -280,6 +363,10 @@ def main():
                 "Probability of sampling an optimal schedule", "E1_p_opt.png", log=True)
         fig_qaoa_vs_baselines(by_method, by_n)
         count += 3
+    for name, fig in (("E2/E2_init.csv", fig_e2), ("E6/E6_noise.csv", fig_e6)):
+        if (ROOT / "results" / name).exists():
+            fig(ROOT / "results" / name)
+            count += 1
     print(f"wrote {count} figures to {FIGURES}")
 
 
