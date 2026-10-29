@@ -1,0 +1,35 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+\graphicspath{{../figures/}}
+
+\title{Quantum Load Balancing for HPC Clusters:\\QAOA Simulated at Scale with GPUs}
+% TODO(team): check names and add matriculation numbers if required.
+\author{Xu Xia \and Denzel Elden Wijaya \and Keerthivasan \and Efe Kahraman\\[4pt]
+  \small SC4055 Group Project}
+\date{November 2026}
+
+\begin{document}
+\maketitle
+
+\input{sections/01_introduction}
+\input{sections/02_background}
+\input{sections/03_formulation}
+% Uncomment each line once its file exists. Keep these file names and the section labels in brackets.
+% \input{sections/04_method}          % P1  \label{sec:method}
+% \input{sections/05_implementation}  % P3  \label{sec:implementation}
+% \input{sections/06_setup}           % P3  \label{sec:setup}
+% \input{sections/07_results}         % all \label{sec:results}
+% \input{sections/08_discussion}      % P2  \label{sec:discussion}
+% \input{sections/09_conclusion}      % P2  \label{sec:conclusion}
+
+\bibliographystyle{unsrt}
+\bibliography{references}
+
+\end{document}
