@@ -1,0 +1,2 @@
+exp,instance_id,n,p,init,optimizer,target,precision,noise,energy,approx_ratio,p_opt,best_cost,violations,makespan,n_evals,wall_time_s,seed,peak_mem_mb
+E4_timing,n30_s0,30,3,ramp,COBYLA,nvidia-fp64,fp64,0,-4.308000818113247,0.8857102420036707,0.0003,-22.881093935790727,0,138.0,434,43085.839228261,0,17366.1875
