@@ -276,9 +276,17 @@ def fig_e2(path):
     """Initialisation strategies at the deepest p: quality (left) and optimiser cost (right)."""
     rows = list(csv.DictReader(open(path)))
     p = max(int(r["p"]) for r in rows)
+    # INTERP reaches depth p only by optimising every depth 1..p in turn, so its
+    # cost is the whole chain's evaluations, not just the final stage's.
+    chain = defaultdict(int)
+    for r in rows:
+        if r["init"] == "interp" and int(r["p"]) <= p:
+            chain[r["instance_id"]] += int(r["n_evals"])
     by = defaultdict(lambda: defaultdict(list))
     for r in rows:
         if int(r["p"]) == p:
+            if r["init"] == "interp":
+                r = {**r, "n_evals": chain[r["instance_id"]]}
             by[r["init"]][int(r["n"])].append(r)
 
     fig, (ax_r, ax_e) = plt.subplots(1, 2, figsize=(10, 4.2), dpi=150)
