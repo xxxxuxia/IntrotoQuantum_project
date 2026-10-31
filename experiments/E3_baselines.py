@@ -1,8 +1,9 @@
 """E3: classical baselines (KK, LPT, SA, CP-SAT) timing + quality, n = 8-28.
 
-Generates one fixed-seed instance per size, runs all four baselines on each,
-and checkpoints cost/violations/wall_time_s/approx_ratio to
-results/baselines_timing.csv. Re-running this script skips rows already on
+Runs all four baselines on the same instances as E1 (seeds 0-9) for n <= 20,
+and on one instance (seed 0) per size for n = 21-28, where the brute-force
+reference is too slow to repeat. Results (cost/violations/wall_time_s/
+approx_ratio) are checkpointed to results/baselines_timing.csv. Re-running this script skips rows already on
 disk (see bench.run_sweep).
 
 Ground truth for approx_ratio comes from baselines.reference_optimum, which
@@ -22,8 +23,9 @@ import problem as P
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS_CSV = ROOT / "results" / "baselines_timing.csv"
-BASE_SEED = 0
 SIZES = range(8, 29)
+MULTI_SEED_MAX_N = 20
+INSTANCES = 10
 OPTIMIZERS = ("KK", "LPT", "SA", "CPSAT")
 
 _ref_cache = {}
@@ -38,19 +40,20 @@ def _reference_cached(inst):
 def build_tasks():
     tasks = []
     for n in SIZES:
-        for optimizer in OPTIMIZERS:
-            tasks.append({
-                "exp": "E3_baselines",
-                "instance_id": f"n{n}_s{BASE_SEED}",
-                "n": n,
-                "p": "",
-                "init": "",
-                "optimizer": optimizer,
-                "target": "n/a",
-                "precision": "",
-                "noise": "",
-                "seed": BASE_SEED,
-            })
+        for seed in range(INSTANCES if n <= MULTI_SEED_MAX_N else 1):
+            for optimizer in OPTIMIZERS:
+                tasks.append({
+                    "exp": "E3_baselines",
+                    "instance_id": f"n{n}_s{seed}",
+                    "n": n,
+                    "p": "",
+                    "init": "",
+                    "optimizer": optimizer,
+                    "target": "n/a",
+                    "precision": "",
+                    "noise": "",
+                    "seed": seed,
+                })
     return tasks
 
 
@@ -76,7 +79,7 @@ def runner(task):
         "energy": r["cost"],
         "approx_ratio": approx_ratio,
         "p_opt": "",
-        "best_cost": c_min,
+        "best_cost": r["cost"],
         "violations": r["violations"],
         "makespan": P.makespan(inst, z),
         "n_evals": "",
