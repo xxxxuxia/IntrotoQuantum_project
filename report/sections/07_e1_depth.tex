@@ -1,0 +1,59 @@
+% Section 7.1 -- E1: quality vs depth (P1)
+% Numbers from results/E1_depth.csv, results/E1_angles.json and results/E2/E2_init.csv.
+
+\subsection{E1: Solution quality and circuit depth}
+\label{sec:e1}
+
+E1 runs QAOA with INTERP initialisation at depths $p = 1, \dots, 6$ on ten instances at each size $n = 8, 10, \dots, 20$: 420 optimised runs in total.
+Sizes up to 12 ran on a laptop CPU in double precision, and sizes 14 to 20 on an NVIDIA A40 GPU in single precision (Section~\ref{sec:setup}).
+At $n = 12$, which we ran on both, the mean approximation ratios of the two backends agree within $0.0005$ at five of the six depths; at $p = 4$ one instance converges to a different local minimum.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{E1_approx_ratio.png}
+  \caption{Approximation ratio of the mean cost against depth. $p = 0$ is the uniform superposition, i.e.\ random guessing.}
+  \label{fig:e1-ratio}
+\end{figure}
+
+\paragraph{Quality improves with every layer.}
+Figure~\ref{fig:e1-ratio} shows the approximation ratio $r$ of the mean cost.
+Random guessing scores $r = 0.71$--$0.73$.
+One layer raises this to $0.83$--$0.87$, and six layers to between $0.93$ ($n = 16$) and $0.97$ ($n = 8$).
+The improvement is monotonic for every single instance: none of the 350 steps from depth $p$ to $p + 1$ lowers $r$, as expected, since INTERP starts each depth from a state at least as good as the previous optimum.
+The gains shrink with depth, however.
+At $n = 8$ the second layer adds $0.045$ and the sixth only $0.008$.
+
+Quality also falls slowly with $n$, but not smoothly: $n = 14$ and $16$ are worse than $n = 18$ and $20$, with much wider error bands.
+Two instances, \texttt{n14\_s2} and \texttt{n16\_s2}, cause this.
+Their INTERP chains get stuck in a poor local minimum at $r \approx 0.73$ and never leave it, while starting the same instances from transferred angles (E2) reaches $0.96$ and $0.92$.
+Without them, the mean at $p = 6$ is $0.95$ for both sizes, in line with the neighbouring sizes.
+Because INTERP builds each depth on the previous one, an unlucky basin at low depth is carried all the way up; this is the main weakness of the method, and E2 examines it directly.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{E1_p_opt.png}
+  \caption{Probability that one shot returns an optimal schedule (log scale). $p = 0$ is random guessing, $(\text{number of optima})/2^n$.}
+  \label{fig:e1-popt}
+\end{figure}
+
+\paragraph{Success probability.}
+Figure~\ref{fig:e1-popt} shows the probability $P(\text{opt})$ that a single shot is optimal.
+At $p = 6$ it falls from $0.24$ at $n = 8$ to $0.035$ at $n = 20$.
+Random guessing falls much faster, as $2^{-n}$, so QAOA's advantage over it grows with size: from 19 times at $n = 8$ to about $17{,}000$ times at $n = 20$.
+In practice this means 10{,}000 shots are plenty: from $p = 3$ onwards the best of the 10{,}000 samples is an exact optimum on all 70 instances.
+At $p = 1$ this already holds for every instance up to $n = 16$, but only for 4 of 10 instances at $n = 18$ and $n = 20$.
+
+\paragraph{Optimiser cost.}
+The number of energy evaluations grows with depth, from 45--85 at $p = 1$ to 180--470 at $p = 6$.
+On the CPU, 5--8 of the 10 runs per size hit the 500-evaluation budget at $p \geq 5$, while the GPU runs at $n \geq 14$ almost never do.
+The $n = 12$ comparison shows why: in single precision COBYLA stops about twice as early, after the energy stops changing in the last digits, yet reaches the same $r$.
+We therefore compare evaluation counts only between runs at the same precision.
+On the A40, the full E1 sweep at $n = 20$ (ten instances, $p = 1$ to $6$) took 10 minutes.
+
+\paragraph{Optimised angles.}
+The median optimised angles at $p = 6$ follow a pattern resembling an annealing schedule: $\gamma_\ell$ rises from $0.23$ to $0.89$ while $|\beta_\ell|$ falls from $0.40$ to $0.10$, so the circuit starts by mixing and ends by applying the cost.
+The angles of different instances lie close to these medians, which is what makes the angle transfer of E2 and E5 possible.
+
+\paragraph{Answer to RQ1.}
+QAOA's solutions improve with every layer, from 0.83--0.87 of the way to the optimum at one layer to 0.93--0.97 at six, with diminishing returns per layer.
+Even when the average output is far from optimal, an exact optimum is among the 10{,}000 samples on every instance from $p = 3$.
