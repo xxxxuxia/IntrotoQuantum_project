@@ -4,93 +4,30 @@
 \section{Method}
 \label{sec:method}
 
-This section describes how we build, optimise and evaluate the QAOA circuit for the cost Hamiltonian $H_C$ of Eq.~\eqref{eq:hamiltonian}.
-Section~\ref{sec:qaoa-background} introduced the algorithm; here we fix the choices that the results depend on.
+\paragraph{Circuit.}
+Each job is one qubit.
+The circuit prepares $\lvert + \rangle^{\otimes n}$ with Hadamard gates and applies $p$ layers.
+Since all terms of $H_C$ commute, the cost layer factorises exactly into one gate sequence per coupling,
+$e^{-i \gamma J_{ij} Z_i Z_j} = \mathrm{CX}_{ij}\, R_Z^{(j)}(2\gamma J_{ij})\, \mathrm{CX}_{ij}$,
+and the mixer is $R_X(2\beta)$ on every qubit.
+A layer thus has $n(n-1)$ CX gates, $n(n-1)/2$ $R_Z$ gates and $n$ $R_X$ gates.
+The $2p$ angles are stored as $\boldsymbol\theta = (\gamma_1, \dots, \gamma_p, \beta_1, \dots, \beta_p)$; since $H_C$ is real, $\boldsymbol\theta$ and $-\boldsymbol\theta$ give the same probabilities, so we flip every angle vector to $\gamma_1 \geq 0$ before comparing or averaging angles.
 
-\subsection{Circuit}
-\label{sec:circuit}
+\paragraph{Optimisation.}
+COBYLA (SciPy, initial step $0.2$\,rad, at most 500 evaluations) minimises the exact energy $\langle H_C \rangle$ computed from the statevector, which keeps shot noise out of the optimisation.
+Because $H_C$ is scaled to $\max |J_{ij}| = 1$ (Section~\ref{sec:normalisation}), one angle scale serves every instance.
 
-The circuit uses one qubit per job, with qubit $i$ holding job $i$.
-It starts with a Hadamard gate on every qubit to prepare $\lvert + \rangle^{\otimes n}$ and then applies $p$ layers.
-In layer $\ell$ the cost unitary $e^{-i\gamma_\ell H_C}$ factorises exactly into one two-qubit term per coupling, because all terms of $H_C$ commute.
-Each term is compiled as
-\begin{equation}
-  e^{-i \gamma J_{ij} Z_i Z_j} = \mathrm{CX}_{ij}\; R_Z^{(j)}(2\gamma J_{ij})\; \mathrm{CX}_{ij},
-  \label{eq:zz-gate}
-\end{equation}
-and the mixer $e^{-i\beta_\ell \sum_i X_i}$ is one $R_X(2\beta_\ell)$ rotation on every qubit.
-The constant term of $H_C$ is a global phase and is not applied.
-A layer therefore contains $n(n-1)$ CX gates, $n(n-1)/2$ $R_Z$ gates and $n$ $R_X$ gates, so the gate count grows as $n^2$ per layer and linearly in $p$.
+\paragraph{Initial angles.}
+E1 starts $p = 1$ from a linear ramp ($\gamma_\ell = 0.75\,t_\ell$, $\beta_\ell = 0.75(1 - t_\ell)$, $t_\ell = (\ell - \tfrac12)/p$) and then uses INTERP~\cite{zhou2020}: the optimised depth-$p$ angles are linearly interpolated onto $p + 1$ points to start depth $p + 1$, so each instance is optimised as a chain $p = 1, \dots, 6$.
+E2 also tests the best of five uniformly random starts, and \emph{transfer}: the median optimised angles of the ten $n = 8$ instances, used as a starting point or with no optimisation at all.
 
-The $2p$ angles are stored as one vector $\boldsymbol\theta = (\gamma_1, \dots, \gamma_p, \beta_1, \dots, \beta_p)$.
-Because $H_C$ is real, the angles $\boldsymbol\theta$ and $-\boldsymbol\theta$ give complex-conjugate states with identical measurement probabilities.
-Before we compare or average angles across instances, we therefore flip the sign of any vector with $\gamma_1 < 0$, so that all of them lie on the $\gamma_1 \geq 0$ branch.
+\paragraph{Metrics.}
+After optimisation we draw 10{,}000 shots.
+The exact $C_{\min}$, $C_{\max}$ and set of optimal bitstrings come from brute force for $n \leq 24$ (CP-SAT above).
+We report the approximation ratio of the mean cost, $r = (C_{\max} - \langle C \rangle)/(C_{\max} - C_{\min})$, for which random guessing already scores $0.71$--$0.73$;
+the success probability $P(\text{opt})$, the fraction of shots that hit \emph{any} optimal bitstring;
+and the best of the 10{,}000 shots, which is what QAOA would return in practice and the fair comparison with classical solvers.
+Violations of the best shot are reported separately.
 
-\subsection{Objective and optimiser}
-\label{sec:optimiser}
-
-The optimiser minimises the exact expectation $E(\boldsymbol\theta) = \langle \boldsymbol\theta \rvert H_C \lvert \boldsymbol\theta \rangle$, which the simulator computes directly from the statevector.
-Using the exact value instead of a shot estimate removes sampling noise from the optimisation, so the results isolate the behaviour of QAOA itself; on hardware, $E$ would have to be estimated from measurements.
-Because $H_C$ is scaled so that $\max |J_{ij}| = 1$ (Section~\ref{sec:normalisation}), the same angle scale applies to every instance.
-
-We use COBYLA, a gradient-free trust-region method, as implemented in SciPy, with an initial step of $0.2$\,rad and a budget of 500 energy evaluations per optimisation.
-Gradient-free methods are the usual choice for QAOA because each gradient would cost $4p$ additional circuit evaluations.
-We record the number of evaluations each run uses, since this is the main driver of simulation time.
-
-\subsection{Initial angles}
-\label{sec:init}
-
-The energy landscape has many local minima, so the starting point matters.
-We use four strategies; E1 uses the first, and E2 compares all four.
-
-\begin{description}
-  \item[Ramp ($p = 1$ only in E1).]
-  A linear ramp that imitates a discretised annealing schedule: $\gamma_\ell = 0.75\,t_\ell$ and $\beta_\ell = 0.75\,(1 - t_\ell)$ with $t_\ell = (\ell - \tfrac12)/p$.
-  \item[INTERP.]
-  The method of Zhou et al.~\cite{zhou2020}.
-  The optimised angles at depth $p$ are linearly interpolated onto $p + 1$ points and used as the starting point at depth $p + 1$:
-  \begin{equation}
-    \gamma^{(p+1)}_{\ell} = \frac{\ell - 1}{p}\, \gamma^{(p)}_{\ell - 1} + \frac{p - \ell + 1}{p}\, \gamma^{(p)}_{\ell},
-    \qquad \ell = 1, \dots, p + 1,
-  \end{equation}
-  with $\gamma^{(p)}_0 = \gamma^{(p)}_{p+1} = 0$, and the same rule for $\boldsymbol\beta$.
-  Each instance is therefore optimised as a chain $p = 1, 2, \dots, 6$, and depth $p + 1$ starts from a state at least as good as the optimum at depth $p$.
-  \item[Random.]
-  $\gamma_\ell$ uniform in $[0, \pi]$ and $\beta_\ell$ uniform in $[0, \pi/2]$; we keep the best of five starts.
-  \item[Transfer.]
-  The element-wise median of the optimised (sign-canonicalised) angles over the ten $n = 8$ instances of E1, used either as a starting point or directly with no optimisation.
-  Optimal QAOA angles are known to concentrate across instances of the same problem class, so angles found on small instances are often good on larger ones.
-\end{description}
-
-\subsection{Sampling and metrics}
-\label{sec:metrics}
-
-After optimisation the circuit is measured 10{,}000 times, and each bitstring is mapped to a schedule with $z_i = 1 - 2x_i$.
-Every instance used in E1 and E2 has at most 20 jobs, so we compute its exact minimum $C_{\min}$, maximum $C_{\max}$ and the full set of optimal bitstrings by brute force over all $2^n$ schedules.
-For $n > 24$ (E5) the minimum comes from CP-SAT and $C_{\max}$ from a closed form.
-We report four metrics.
-
-\begin{enumerate}
-  \item \textbf{Approximation ratio} of the mean cost,
-  \begin{equation}
-    r = \frac{C_{\max} - \langle C \rangle}{C_{\max} - C_{\min}},
-    \label{eq:approx-ratio}
-  \end{equation}
-  with $\langle C \rangle = s\,E(\boldsymbol\theta)$.
-  It is 1 for a state concentrated on optimal schedules and 0 for the worst schedule.
-  Because the cost is quadratic and its range is set by the worst schedule, the uniform superposition (random guessing) already scores $r \approx 0.71$--$0.73$ on our instances; this is the $p = 0$ reference.
-  \item \textbf{Success probability} $P(\text{opt})$: the fraction of shots that return \emph{any} optimal bitstring (Section~\ref{sec:symmetry}).
-  \item \textbf{Best sample}: the lowest-cost schedule among the 10{,}000 shots, reported as its own approximation ratio. This is the answer QAOA would return in practice, and it is the like-for-like comparison with classical solvers, which also return one schedule.
-  \item \textbf{Violations and makespan} of the best sample, so that a schedule that trades a conflict for balance is always visible.
-\end{enumerate}
-
-Every run also records its wall time and number of energy evaluations.
-Runs are identified by (experiment, instance, depth, initialisation, backend, precision, noise level, seed) and appended to a CSV file as soon as they finish, so an interrupted sweep resumes where it stopped and every figure is regenerated from these files by a single script.
-
-\subsection{Validation}
-\label{sec:validation}
-
-Before running any experiment we checked the implementation against exact results with an automated test suite (40 tests).
-With all angles at zero the circuit returns the uniform state and $\langle C \rangle = \sum_i w_i^2$; the energy from the simulator matches the probability-weighted cost computed from the exact statevector; the sampled mean cost matches the exact expectation within shot noise; every bitstring and its mirror image have the same probability (Section~\ref{sec:symmetry}); and the qubit ordering maps bit $i$ to job $i$.
-As end-to-end checks, $p = 3$ on a 6-job instance reaches $r > 0.9$ and samples the optimum more than five times as often as random guessing, and optimised QAOA beats random sampling on both metrics at $n = 10$.
-For the noise study (E6), every noiseless density-matrix result is checked against the statevector energy and the run stops if they disagree.
+\paragraph{Validation.}
+A suite of 40 automated tests checks, among others, that zero angles give $\langle C \rangle = \sum_i w_i^2$, that sampled and exact energies agree, that every bitstring and its mirror are equally likely (Section~\ref{sec:symmetry}), and that optimised QAOA beats random sampling at $n = 10$.
