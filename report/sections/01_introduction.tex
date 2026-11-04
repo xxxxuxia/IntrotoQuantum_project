@@ -34,7 +34,6 @@ We ask four questions.
   \item[\textbf{RQ3}] \textbf{Noise robustness.} How much do realistic hardware errors degrade QAOA's performance?
   \item[\textbf{RQ4}] \textbf{HPC scalability.} How much faster are GPUs than CPUs for simulating these circuits, and how large a problem can we reach?
 \end{enumerate}
-% TODO(team): RQ3 needs E6 and RQ4 needs E4. If either experiment is dropped, move that question to Limitations.
 
 \subsection{Scope}
 
@@ -48,15 +47,27 @@ Instead, we aim to provide three things:
 \end{enumerate}
 
 \subsection{Summary of findings}
-% TODO(team): replace with the 4-6 key findings agreed at the W11 Monday meeting.
+% All numbers are means over 10 instances per size, as in Section 7.
 
-QAOA's solutions improve steadily with circuit depth.
-On the median instance, QAOA's average output reaches 83--87\,\% of the way from the worst to the best schedule with one layer, and 94--97\,\% with six layers, for 8 to 20 jobs.
-It also finds an exact optimum far more often than random guessing.
-With six layers, 14\,\% of its samples are optimal at $n = 10$, about 34 times the rate of random guessing.
-At $n = 20$ only 1.4\,\% of samples are optimal, but random guessing is about 7{,}600 times less likely to succeed.
-The advantage over random guessing grows with problem size, while the absolute success rate falls.
-Classical methods are much stronger at these sizes: an exact solver (CP-SAT) finds and proves the optimum for 28 jobs in about 0.01 seconds.
+\paragraph{RQ1: quality.}
+QAOA improves with every layer.
+Its approximation ratio rises from $0.71$--$0.73$ for random guessing to $0.83$--$0.87$ with one layer and $0.93$--$0.97$ with six, for 8 to 20 jobs.
+With six layers the probability that one sample is optimal falls from 24\,\% at $n = 8$ to 3.5\,\% at $n = 20$, but random guessing falls much faster, so QAOA's advantage over it grows from 19 to about $17{,}000$ times.
+From three layers on, the best of 10{,}000 samples is an exact optimum on every instance.
+Angles also transfer between problem sizes: starting from angles found at $n = 8$ matches INTERP's quality with 40\,\% of its circuit evaluations.
+
+\paragraph{RQ2: classical comparison.}
+QAOA's best sample matches the exact solver CP-SAT and simulated annealing, and beats greedy partitioning heuristics, which ignore conflicts.
+But classical methods are far faster at these sizes: CP-SAT finds and proves the optimum for 28 jobs in about 5\,ms, while a single QAOA circuit evaluation at $n = 20$ already takes 30\,ms on a GPU, and optimisation needs hundreds of them.
+
+\paragraph{RQ3: noise.}
+A two-qubit error rate of 0.1\,\% costs little, but at 1\,\% extra layers stop helping after $p = 2$, and four layers do worse than one.
+Noise therefore caps the useful circuit depth.
+
+\paragraph{RQ4: HPC scalability.}
+At $n = 20$ one circuit evaluation takes 76\,s on the CPU and 0.03\,s on an NVIDIA A40 GPU, about $2{,}500$ times faster, and the GPU reaches 30 qubits.
+Reusing angles from $n = 20$ without any optimisation still gives an approximation ratio of $0.90$ at $n = 28$.
+The GPU speeds up the simulation, but its cost still doubles with every qubit.
 
 \subsection{Outline}
 
