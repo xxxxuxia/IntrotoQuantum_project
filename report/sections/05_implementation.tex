@@ -1,0 +1,16 @@
+% Section 5 -- Implementation
+% Every detail here comes from src/ and tests/.
+
+\section{Implementation}
+\label{sec:implementation}
+
+The QAOA circuit is one CUDA-Q kernel that takes the couplings and angles as inputs, so the same code serves every instance and depth.
+During optimisation, the function observe returns the exact energy without drawing shots.
+Once the angles are fixed, the function sample measures the final circuit.
+
+We used three CUDA-Q targets.
+The CPU target qpp-cpu always works in double precision, which we call fp64.
+The GPU target nvidia works in single precision (fp32) by default and switches to fp64 with one option.
+The noise experiment uses density-matrix-cpu, which also works in fp64.
+
+Each run is saved to a CSV file as soon as it ends with its seed, target and precision, so a job that stops early can restart where it left off.
