@@ -16,7 +16,7 @@ E1 runs INTERP-initialised QAOA at $p = 1, \dots, 6$ on ten instances per size $
 
 Quality improves with every layer (Fig.~\ref{fig:e1}, top): from $0.71$--$0.73$ for random guessing to $0.83$--$0.87$ at $p = 1$ and $0.93$--$0.97$ at $p = 6$.
 No instance ever got worse with depth, but the gains shrink: at $n = 8$ layer 2 adds $0.045$ and layer 6 only $0.008$.
-The dip at $n = 14$ and $16$ comes from two instances whose INTERP chain is stuck at $r \approx 0.73$ from $p = 1$ onwards; transferred angles reach $0.96$ and $0.92$ on them (E2), and without them both sizes average $0.95$.
+The dip at $n = 14$ and $16$ comes from two instances whose INTERP chain starts in a poor basin ($r \approx 0.71$ at $p = 1$) and never exceeds $0.74$; transferred angles reach $0.96$ and $0.92$ on them (E2), and without them both sizes average $0.95$.
 
 $P(\text{opt})$ at $p = 6$ falls from $0.24$ at $n = 8$ to $0.035$ at $n = 20$ (Fig.~\ref{fig:e1}, bottom), but random guessing falls as $2^{-n}$, so QAOA's advantage grows from 19 to about $17{,}000$ times.
 From $p = 3$ the best of 10{,}000 shots is an exact optimum on all 70 instances.
