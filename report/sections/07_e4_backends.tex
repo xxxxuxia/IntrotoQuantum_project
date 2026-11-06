@@ -1,0 +1,28 @@
+% Section 7.4 -- E4: CPU vs GPU vs fp64 (P3)
+% Numbers from results/E4_cluster/*/E4_timing.csv.
+
+\subsection{E4: Backend scaling -- CPU, GPU, and precision}
+\label{sec:e4}
+
+E4 holds the circuit fixed at $p = 3$ and changes only the simulation target: CPU (\texttt{qpp-cpu}, fp64), GPU (\texttt{nvidia}, fp32), and GPU in fp64.
+Runs stop after different numbers of COBYLA evaluations, so wall time per evaluation, not total wall time, is what is comparable across targets (Section~\ref{sec:setup}).
+CPU runs stop at $n = 20$: Fig.~\ref{fig:e4} already shows why.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{E4_timing.png}
+  \caption{E4 at $p = 3$. Left: wall time per circuit evaluation against problem size (log scale). Right: GPU memory above an idle CUDA context (log scale), measured against the $2^n$ amplitudes a statevector simulator must store.}
+  \label{fig:e4}
+\end{figure}
+
+The CPU is competitive only at the smallest sizes.
+At $n = 10$ it costs $16.0$\,ms per evaluation against the GPU's $6.3$\,ms, a gap of $2.6\times$; by $n = 20$ the CPU takes $76.4$\,s and the GPU $30.7$\,ms, a gap of about $2{,}500\times$ (Fig.~\ref{fig:e4}, left).
+The reason is the doubling in the number of amplitudes each extra qubit adds: the CPU's cost roughly quadruples every two qubits, while the GPU, still far from saturating an A40's throughput at these sizes, grows much more slowly until the problem is large enough to need it.
+This is also why E4 does not run the CPU target past $n = 20$: extrapolating the same trend puts $n = 22$ at several minutes per evaluation and hundreds needed per optimisation, which is no longer practical for a sweep.
+
+fp32 and fp64 cost about the same on the GPU up to $n = 18$ -- within $8\,\%$ of each other, and fp64 is sometimes marginally faster -- because at these sizes the GPU is latency-bound: there are not yet enough amplitudes to make the doubled memory traffic of fp64 the bottleneck.
+Past $n = 20$ the two separate: fp64 costs $1.9\times$ fp32 at $n = 20$, rising to $5.8$--$5.9\times$ by $n = 26$--$30$, close to the $2\times$ memory, $2\times$ compute (gates act on twice as many bytes per amplitude) argument from Section~\ref{sec:implementation} once overhead is no longer the dominant cost.
+
+Memory confirms the simulator is doing exactly what it says: for $n \geq 24$, measured GPU memory above idle matches the $2^n$-amplitude prediction to within $1\,\%$ for both precisions (Fig.~\ref{fig:e4}, right); below $n = 24$ the state itself is small enough that fixed CUDA-Q overhead dominates and the two curves have not yet converged.
+At $8$ bytes an amplitude, fp32 fits our $48$\,GB A40s up to $n = 32$; fp64, at $16$ bytes, up to $n = 31$ (Section~\ref{sec:implementation}).
+One run each hit the batch system's 24-hour limit -- GPU fp64 at $n = 30$, left with one of three instances, and CPU at $n = 20$, left with two of three -- which is why Fig.~\ref{fig:e4} shows fewer points at the largest sizes on those two lines.
