@@ -1,28 +1,24 @@
 % Section 7.2 -- E2: initialisation strategies (P2)
 % Numbers from results/E2/E2_init.csv (p = 6, means over 10 instances per n).
+% This file also holds the E6 figure, so E2 and E6 share one figure page.
 
 \subsection{E2: Initialisation strategies}
 \label{sec:e2}
 
-E2 compares the four initialisation strategies of Section~\ref{sec:method} at depth $p = 6$: INTERP, the best of five random starts, and transferred angles with and without optimisation.
-All four run on the same ten instances per size $n = 10, 12, 14, 16$, with the same COBYLA settings and on the same A40 GPU in single precision, so their evaluation counts are directly comparable.
-The transferred angles come from the $n = 8$ instances of E1, so they are never tested on the instances they were taken from.
+E2 compares four starting points at $p = 6$ on the same ten instances per size $n = 10$--$16$: INTERP, the best of five random starts, and angles transferred from the $n = 8$ instances of E1, with and without optimisation.
 
-\begin{figure}[t]
+\begin{figure}[p]
   \centering
   \includegraphics[width=\linewidth]{E2_init.png}
-  \caption{E2 at $p = 6$. Left: approximation ratio of the mean cost. Right: number of circuit evaluations used by COBYLA (log scale); for INTERP this counts the whole chain $p = 1, \dots, 6$, and transfer without optimisation uses none.}
+  \caption{E2 at $p = 6$. Left: approximation ratio of the mean cost. Right: circuit evaluations used by COBYLA (log scale); for INTERP this counts the whole chain $p = 1, \dots, 6$.}
   \label{fig:e2}
+  \vspace{18pt}
+  \includegraphics[width=\linewidth]{E6_noise.png}
+  \caption{E6. Approximation ratio of the mean cost against depth for each two-qubit error rate, at $n = 6$ (left) and $n = 8$ (right).}
+  \label{fig:e6}
 \end{figure}
 
-Transferred angles followed by optimisation give the best quality at every size (tied with INTERP at $n = 10$), with a mean approximation ratio of $0.954$, against $0.945$ for INTERP, $0.933$ for transfer without optimisation and $0.898$ for the best of five random starts (Fig.~\ref{fig:e2}, left).
-They are also cheap: about 360 evaluations, 40\,\% of the 910 that INTERP needs over its full chain, and 15\,\% of the 2{,}430 used by five random starts (Fig.~\ref{fig:e2}, right).
-Random starts are the worst choice on both counts, which suggests that the energy landscape has many poor local minima.
-
-The gap between transfer and INTERP comes from only two instances.
-Transfer and INTERP agree within $0.001$ on 34 of the 40 instances, and without the two instances on which INTERP is stuck ($n = 14$ and $16$, seed 2; Section~\ref{sec:e1}) both average $0.955$.
-INTERP builds each depth from the previous one, so a poor solution at $p = 1$ is carried all the way to $p = 6$; transferred angles do not depend on that chain and reach $0.961$ and $0.915$ on the two instances.
-Transfer therefore matches INTERP on typical instances, avoids its rare failures, and costs less.
-
-Even with no optimisation at all, transferred angles reach $0.933$, within $0.012$ of INTERP.
-Good angles for this problem are thus similar across instances and sizes, which is what allows E5 (Section~\ref{sec:e5}) to run QAOA at $n = 20$--$28$ without any optimisation.
+Transfer followed by optimisation gives the best quality at every size, with a mean ratio of $0.954$, against $0.945$ for INTERP, $0.933$ for transfer without optimisation and $0.898$ for random starts (Fig.~\ref{fig:e2}).
+It is also cheap: about 360 evaluations, 40\,\% of INTERP's 910 over its full chain and 15\,\% of the 2{,}430 used by random starts.
+The gap to INTERP comes from only two instances: the two on which INTERP is stuck in E1, where transfer reaches $0.961$ and $0.915$; without them both average $0.955$.
+Even with no optimisation, transferred angles reach $0.933$, so good angles are similar across instances and sizes, which E5 exploits.

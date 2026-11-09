@@ -5,44 +5,26 @@
 \section{Experimental Setup}
 \label{sec:setup}
 
-All GPU runs and CPU timing runs ran as Slurm batch jobs on a shared university cluster.
-Each node has two NVIDIA A40 GPUs with 48\,GB each, two 16-core CPUs and 192\,GB of main memory.
-We used Python 3.11, CUDA-Q 0.16 and SciPy 1.17.
-Each GPU job used one GPU, and every job had a 24-hour limit.
-Table~\ref{tab:experiments} lists the settings of each experiment, all with $\lambda = 0.5$.
-Above $n = 24$ we know only one optimal schedule and its mirror image, so $P(\text{opt})$ at those sizes may be slightly too low.
+All GPU runs and CPU timing runs ran as Slurm batch jobs on a shared university cluster, whose nodes each have two 48\,GB NVIDIA A40 GPUs, two 16-core CPUs and 192\,GB of memory (Python 3.11, CUDA-Q 0.16, SciPy 1.17).
+Each GPU job used one GPU with a 24-hour limit, and CPU timing runs used 8 threads.
+Table~\ref{tab:experiments} lists each experiment, all with $\lambda = 0.5$.
+Because E1 mixes CPU fp64 and GPU fp32, we also ran $n = 12$ on the GPU: the ratio changed by less than $0.001$ in 58 of 60 runs and the best sampled cost never changed.
 
 \begin{table}[h]
   \centering
-  \caption{Settings of each experiment. Instances are counted per size. Sizes go up in steps of 2 except in E3, which uses every size. In E2, INTERP also runs depths 1, 3 and 5.}
+  \small
+  \caption{Settings of each experiment. Instances are counted per size; sizes go up in steps of 2 except in E3.}
   \label{tab:experiments}
   \begin{tabular}{@{}llllll@{}}
     \toprule
     Exp. & Purpose & Simulator & Sizes $n$ & Instances & Depth $p$ \\
     \midrule
-    E1 & Depth sweep & CPU fp64 & 8--12 & 10 & 1--6 \\
-       &             & GPU fp32 & 14--20 & 10 & 1--6 \\
+    E1 & Depth sweep & CPU fp64 / GPU fp32 & 8--12 / 14--20 & 10 & 1--6 \\
     E2 & Starting angles & GPU fp32 & 10--16 & 10 & 2, 4, 6 \\
-    E3 & Classical methods & none & 8--20 & 10 & none \\
-       &                   & none & 21--28 & 1 & none \\
-    E4 & Timing & CPU fp64 & 10--20 & 3 & 3 \\
-       &        & GPU fp32 and fp64 & 10--30 & 3 & 3 \\
-    E5 & Reused angles at large $n$ & GPU fp32 & 20--28 & 10 & 1--6 \\
+    E3 & Classical methods & none & 8--20 / 21--28 & 10 / 1 & none \\
+    E4 & Timing & CPU fp64 / GPU fp32, fp64 & 10--20 / 10--30 & 3 & 3 \\
+    E5 & Reused angles & GPU fp32 & 20--28 & 10 & 1--6 \\
     E6 & Gate noise & CPU density matrix & 6, 8 & 10 & 1--4 \\
     \bottomrule
   \end{tabular}
 \end{table}
-
-E4 changes only the target between runs.
-Runs stop after different numbers of evaluations, so we compare the time per evaluation.
-The CPU runs used 8 threads rather than the whole node.
-Since qpp-cpu supports only fp64, the fair comparison is CPU fp64 against GPU fp64.
-The nodes were shared, so timings reflect normal working conditions.
-Two settings hit the 24-hour limit, which leaves one of three instances for GPU fp64 at $n = 30$ and two of three for the CPU at $n = 20$.
-
-Because E1 mixes CPU fp64 and GPU fp32 results, we also ran $n = 12$ on the GPU.
-The approximation ratio changed by less than 0.001 in 58 of 60 runs and the best sampled cost never changed, so fp32 does not affect our conclusions.
-
-Precision also limits the largest problem a GPU can hold.
-The simulator stores all $2^n$ amplitudes of the state, at 8 bytes each in fp32 and 16 bytes in fp64.
-Each extra qubit doubles the memory, so a 48\,GB A40 holds at most 32 qubits in fp32 and 31 in fp64.

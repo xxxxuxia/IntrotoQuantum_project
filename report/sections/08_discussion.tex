@@ -1,0 +1,21 @@
+% Section 8 -- Discussion. GPU and precision paragraph from Efe (was 08_discussion_efe.tex).
+% Numbers come from Section 7; nothing new is measured here.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Strengths and weaknesses of QAOA.}
+Good angles are similar across instances and sizes, so transferred angles beat INTERP at lower cost (E2) and carry QAOA to $n = 28$ with no optimisation (E5), which matters most on real hardware, where every evaluation is slow and noisy.
+QAOA's main cost is the optimisation loop: hundreds of evaluations, against milliseconds for CP-SAT (E3).
+$P(\text{opt})$ also falls with $n$, so larger problems need more shots, and noise caps the useful depth at $p = 1$--$2$ at a 1\,\% error rate (E6).
+
+\paragraph{GPU and precision.}
+Our $2{,}500$-fold GPU speed-up at $n = 20$ is worth only about 11 extra qubits, because each qubit doubles the cost, and one 48\,GB A40 holds at most 32 qubits in fp32.
+Single precision was the right choice on the A40.
+From 24 qubits on it ran about six times faster than fp64, and in our check at $n = 12$ it never changed the best cost found.
+
+\paragraph{Limitations.}
+We schedule onto only two nodes; $k$ nodes would need several qubits per job and constraints to keep each job on exactly one node.
+Above $n = 24$ we know only one optimum and its mirror, so $P(\text{opt})$ there is a lower bound.
+Our noise model is depolarising only: it leaves out readout errors, decoherence and the SWAP gates that limited qubit connectivity would add, and we do not re-optimise angles under noise.
+Finally, our timings are for simulation, not quantum hardware.

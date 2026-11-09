@@ -1,0 +1,11 @@
+% Section 9 -- Conclusion.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We studied QAOA for two-node load balancing with anti-affinity constraints, simulated on GPUs with CUDA-Q.
+QAOA improves with every layer, from $0.72$ for random guessing to $0.93$--$0.97$ at $p = 6$, and its best sample is optimal on every instance from $p = 3$ (RQ1).
+It matches simulated annealing and CP-SAT on its best sample and beats greedy heuristics, but classical solvers are far faster at these sizes (RQ2).
+At a two-qubit error rate of 1\,\%, depth beyond $p = 2$ makes results worse (RQ3).
+An A40 GPU simulates these circuits about $2{,}500$ times faster than a CPU at $n = 20$ and reaches 30 qubits, and transferred angles carry QAOA to 28 jobs without optimisation (RQ4).
+Next steps are scheduling onto more nodes, multi-GPU simulation beyond 30 qubits, and transferred angles on real hardware.

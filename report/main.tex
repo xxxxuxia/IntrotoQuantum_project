@@ -26,10 +26,13 @@
 \input{sections/05_implementation}
 \input{sections/06_setup}
 \input{sections/07_results}
-% \input{sections/08_discussion}
-% \input{sections/09_conclusion}
+\input{sections/08_discussion}
+\input{sections/09_conclusion}
 
+% Smaller, tighter references to stay within the 6-page text limit.
+\let\oldthebibliography\thebibliography
+\renewcommand{\thebibliography}[1]{\oldthebibliography{#1}\setlength{\itemsep}{0pt}}
 \bibliographystyle{unsrt}
-\bibliography{references}
+{\small\bibliography{references}}
 
 \end{document}

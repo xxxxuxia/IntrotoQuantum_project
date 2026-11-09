@@ -1,26 +1,11 @@
 % Section 7.5 -- E5: large n with transferred angles (P3, angles from P1)
 % Numbers from results/E5_cluster/E5_largen.csv and results/E1_depth.csv (n = 20, p = 6).
+% The E5 figure lives in 07_e4_backends.tex so E4 and E5 share one figure page.
 
-\subsection{E5: Large problems with transferred angles}
+\subsection{E5: Large problems with transferred angles (RQ4)}
 \label{sec:e5}
 
-At $n = 20$--$28$, optimising a fresh set of angles for every instance is too slow to be worth it (Section~\ref{sec:e4}), so E5 instead takes the median angles E1 optimised at $n = 20$ -- its largest size -- and samples with them directly at every size up to $n = 28$, with no further optimisation at all.
-Ten instances per size, 10{,}000 shots each, GPU fp32, depths $p = 1, \dots, 6$.
-This is the same transferability E2 (Section~\ref{sec:e2}) found within $n = 10$--$16$, now pushed eight qubits past where any angle here was actually tuned.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{E5_largen.png}
-  \caption{E5. Transferred $n = 20$ angles, no re-optimisation, at $n = 20$--$28$. Left: approximation ratio of the mean cost by depth. Right: probability of sampling an optimal schedule (log scale); past $n = 24$ only one optimum and its mirror are known (Section~\ref{sec:setup}), so this is a lower bound there.}
-  \label{fig:e5}
-\end{figure}
-
-Quality degrades gently with size, not sharply.
-At $p = 6$ the approximation ratio falls from $0.919$ at $n = 20$ to $0.897$ at $n = 28$ (Fig.~\ref{fig:e5}, left) -- a drop of $0.022$ over eight additional qubits, against the $2^8 = 256\times$ larger search space.
-Depth still helps throughout the range: at $n = 28$, $p = 1$ reaches only $0.794$, so six transferred layers still recover most of the gain seen when E1 optimises at $n = 20$ directly.
-
-The cost of skipping optimisation shows up at $n = 20$ itself, where E5's transferred angles and E1's per-instance optimised ones can be compared directly on the same size: E1 reaches a ratio of $0.938$ and $P(\text{opt}) = 0.035$ at $p = 6$, against E5's $0.919$ and $0.015$ with the same, un-tuned angles.
-So reusing one set of median angles costs about $0.02$ in approximation ratio and roughly halves the chance of sampling the exact optimum -- a real but modest price for skipping the optimisation loop entirely.
-
-$P(\text{opt})$ is more sensitive than the mean cost (Fig.~\ref{fig:e5}, right): it falls from $0.0152$ at $n = 20$ to $0.0081$ at $n = 28$ at $p = 6$, and 63 of the 300 (instance, depth) combinations sample zero optima at all in 10{,}000 shots, almost all at $p \leq 2$ where the circuit has not yet concentrated enough probability on the optimum to hit it reliably.
-Taken with E4, this is the practical shape of RQ4: the GPU is what makes reaching $n = 28$ possible at all, and angle transfer is what makes it affordable, at a quality cost that grows slowly enough to still be worth paying.
+Optimising fresh angles at $n = 20$--$28$ is too slow, so E5 takes the median angles E1 optimised at $n = 20$ and samples with them at every size up to $n = 28$, with no optimisation (ten instances per size, 10{,}000 shots, GPU fp32).
+Quality degrades gently: at $p = 6$ the ratio falls from $0.919$ at $n = 20$ to $0.897$ at $n = 28$ (Fig.~\ref{fig:e5}, left), although the search space grows 256-fold, and depth still helps throughout ($0.794$ at $p = 1$ for $n = 28$).
+At $n = 20$, reusing angles instead of optimising each instance costs $0.02$ in ratio ($0.919$ against E1's $0.938$) and halves $P(\text{opt})$ ($0.015$ against $0.035$).
+$P(\text{opt})$ at $p = 6$ falls to $0.008$ at $n = 28$ (Fig.~\ref{fig:e5}, right), and each run there takes about 12\,s.

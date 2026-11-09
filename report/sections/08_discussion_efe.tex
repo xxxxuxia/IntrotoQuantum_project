@@ -1,7 +1,0 @@
-% Section 8 -- Discussion lines from Efe (GPU and precision), to be merged into 08_discussion.tex.
-% Not \input in main.tex on its own. Numbers come from results/E4_cluster and the n = 12 check in Section 6.
-% If the E4 discussion already gives the fp32 vs fp64 speed, keep only the recommendation.
-
-Our 2,500-fold GPU speed-up at $n = 20$ is worth only about 11 extra qubits, because each qubit doubles the cost, and one A40 runs out of memory at 32 qubits.
-Single precision was the right choice on the A40.
-From 24 qubits on it ran about six times faster than fp64, and in our check at $n = 12$ it never changed the best cost found.
