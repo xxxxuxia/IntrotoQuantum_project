@@ -18,4 +18,4 @@ From 24 qubits on it ran about six times faster than fp64, and in our check at $
 We schedule onto only two nodes; $k$ nodes would need several qubits per job and constraints to keep each job on exactly one node.
 Above $n = 24$ we know only one optimum and its mirror, so $P(\text{opt})$ there is a lower bound.
 Our noise model is depolarising only: it leaves out readout errors, decoherence and the SWAP gates that limited qubit connectivity would add, and we do not re-optimise angles under noise.
-Finally, our timings are for simulation, not quantum hardware.
+Our timings are for simulation, not hardware.

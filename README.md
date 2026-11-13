@@ -50,6 +50,7 @@ exist.
 | `E5_largen.png` | `results/E5_cluster/E5_largen.csv` | `python experiments/E5_largen.py` |
 | `E2_init.png` | `results/E2/E2_init.csv` | `python experiments/E2_init.py` |
 | `E6_noise.png` | `results/E6/E6_noise.csv` | `python experiments/E6_noise.py` |
+| `pipeline.png` | the six-job instance `n6_s0` from `src/problem.py` and its `p = 4` angles in `results/E6/E6_params.jsonl` | `python experiments/E6_noise.py` (schematic of the method; probabilities are recomputed exactly in numpy) |
 
 Then, always:
 

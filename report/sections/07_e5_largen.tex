@@ -6,6 +6,7 @@
 \label{sec:e5}
 
 Optimising fresh angles at $n = 20$--$28$ is too slow, so E5 takes the median angles E1 optimised at $n = 20$ and samples with them at every size up to $n = 28$, with no optimisation (ten instances per size, 10{,}000 shots, GPU fp32).
-Quality degrades gently: at $p = 6$ the ratio falls from $0.919$ at $n = 20$ to $0.897$ at $n = 28$ (Fig.~\ref{fig:e5}, left), although the search space grows 256-fold, and depth still helps throughout ($0.794$ at $p = 1$ for $n = 28$).
-At $n = 20$, reusing angles instead of optimising each instance costs $0.02$ in ratio ($0.919$ against E1's $0.938$) and halves $P(\text{opt})$ ($0.015$ against $0.035$).
-$P(\text{opt})$ at $p = 6$ falls to $0.008$ at $n = 28$ (Fig.~\ref{fig:e5}, right), and each run there takes about 12\,s.
+
+Quality degrades gently: at $p = 6$ the ratio falls from $0.919$ at $n = 20$ to $0.897$ at $n = 28$ (Fig.~\ref{fig:e5}, left), although the search space grows 256-fold, and depth still helps throughout.
+At $n = 20$, reusing angles instead of optimising each instance costs $0.02$ in ratio and halves $P(\text{opt})$.
+$P(\text{opt})$ at $p = 6$ falls to $0.008$ at $n = 28$ (Fig.~\ref{fig:e5}, right), where a run takes about 12\,s.

@@ -5,7 +5,7 @@
 \label{sec:e3}
 
 E3 runs four classical methods: Karmarkar--Karp (KK) and greedy LPT, which balance load only and ignore conflicts, and simulated annealing (SA) and CP-SAT, which optimise the full cost.
-Sizes $n = 8$--$20$ use the same ten instances as E1; $n = 21$--$28$ use one instance each.
+Each size $n = 8$--$20$ has ten instances (E1's at even $n$); $n = 21$--$28$ have one each.
 
 \begin{figure}[p]
   \centering
@@ -14,9 +14,9 @@ Sizes $n = 8$--$20$ use the same ten instances as E1; $n = 21$--$28$ use one ins
   \label{fig:qaoa-vs-baselines}
 \end{figure}
 
-KK and LPT average $0.82$ and $0.81$, falling from about $0.85$ at $n = 8$ to $0.77$ and $0.76$ at $n = 20$, because larger instances have more conflicts to violate: their mean violations per solution grow from about 1 to about 9.
-SA and CP-SAT are effectively exact: CP-SAT is an exact solver, and SA reaches the optimum in 137 of 138 runs, with $0.991$ at worst; both leave fewer than $0.07$ violations per solution on average.
-KK and LPT take microseconds, CP-SAT $3.9$\,ms on average ($5.3$\,ms at $n = 28$) and SA $126$\,ms.
+KK and LPT fall from about $0.85$ at $n = 8$ to about $0.77$ at $n = 20$, because larger instances have more conflicts to violate: their mean violations per solution grow from about 1 to about 9.
+SA and CP-SAT are effectively exact: CP-SAT is an exact solver, SA reaches the optimum in 137 of 138 runs, and both leave almost no violations.
+KK and LPT take microseconds, CP-SAT $3.9$\,ms on average and SA $126$\,ms.
 
 QAOA's mean-cost ratio of $0.93$--$0.97$ beats KK and LPT at every size (Fig.~\ref{fig:qaoa-vs-baselines}).
 Against SA and CP-SAT the fair comparison is QAOA's best shot, the schedule one would actually use, and from $p = 3$ it is optimal on every instance, so QAOA matches them on quality.

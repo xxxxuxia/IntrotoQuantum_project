@@ -14,7 +14,7 @@ Large enough quantum hardware is not available to us, so we simulate QAOA.
 Simulation is itself an HPC problem: $n$ qubits need $2^n$ complex amplitudes, so each extra qubit doubles the memory and the work.
 We use GPUs through NVIDIA's CUDA-Q platform~\cite{cudaq}, so HPC appears twice: as the application we schedule for, and as the tool that makes the study possible.
 
-We place $n$ jobs on two nodes so that the workloads are as balanced as possible while conflicting jobs stay apart, and ask four questions.
+We place $n$ jobs on two nodes so that the workloads are as balanced as possible while conflicting jobs stay apart (Fig.~\ref{fig:pipeline}), and ask four questions.
 
 \begin{enumerate}
   \item[\textbf{RQ1}] \textbf{Quality.} How close does QAOA get to the optimal schedule, and does it improve with circuit depth?

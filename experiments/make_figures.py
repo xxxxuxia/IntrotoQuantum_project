@@ -483,6 +483,232 @@ def fig_e5(path, ref_n=24):
     plt.close(fig)
 
 
+def _qaoa_probabilities(inst, params):
+    """Exact probability of every bitstring for the circuit in src/qaoa.py (index
+    order of problem.index_to_bitstring). Plain numpy, so it runs without cudaq;
+    it reproduces the noiseless E6 rows for n = 6 to six decimals."""
+    sys.path.insert(0, str(ROOT / "src"))
+    import problem as P
+
+    n, p = inst["n"], len(params) // 2
+    z = 1 - 2 * ((np.arange(1 << n)[:, None] >> np.arange(n)) & 1)
+    diag = sum(J * z[:, i] * z[:, j] for i, j, J in P.build_hamiltonian(inst)["terms"])
+    psi = np.full(1 << n, 2 ** (-n / 2), dtype=complex)
+    for layer in range(p):
+        gamma, beta = params[layer], params[p + layer]
+        psi = (psi * np.exp(-1j * gamma * diag)).reshape((2,) * n)
+        rx = np.array([[np.cos(beta), -1j * np.sin(beta)], [-1j * np.sin(beta), np.cos(beta)]])
+        for q in range(n):
+            psi = np.moveaxis(np.tensordot(rx, psi, axes=([1], [n - 1 - q])), 0, n - 1 - q)
+        psi = psi.reshape(-1)
+    return np.abs(psi) ** 2
+
+
+def _qaoa_probabilities(inst, params):
+    """Exact probability of every bitstring for the circuit in src/qaoa.py (index
+    order of problem.index_to_bitstring). Plain numpy, so it runs without cudaq;
+    it reproduces the noiseless E6 rows for n = 6 to six decimals."""
+    sys.path.insert(0, str(ROOT / "src"))
+    import problem as P
+
+    n, p = inst["n"], len(params) // 2
+    z = 1 - 2 * ((np.arange(1 << n)[:, None] >> np.arange(n)) & 1)
+    diag = sum(J * z[:, i] * z[:, j] for i, j, J in P.build_hamiltonian(inst)["terms"])
+    psi = np.full(1 << n, 2 ** (-n / 2), dtype=complex)
+    for layer in range(p):
+        gamma, beta = params[layer], params[p + layer]
+        psi = (psi * np.exp(-1j * gamma * diag)).reshape((2,) * n)
+        rx = np.array([[np.cos(beta), -1j * np.sin(beta)], [-1j * np.sin(beta), np.cos(beta)]])
+        for q in range(n):
+            psi = np.moveaxis(np.tensordot(rx, psi, axes=([1], [n - 1 - q])), 0, n - 1 - q)
+        psi = psi.reshape(-1)
+    return np.abs(psi) ** 2
+
+
+def _qaoa_probabilities(inst, params):
+    """Exact probability of every bitstring for the circuit in src/qaoa.py (index
+    order of problem.index_to_bitstring). Plain numpy, so it runs without cudaq;
+    it reproduces the noiseless E6 rows for n = 6 to six decimals."""
+    sys.path.insert(0, str(ROOT / "src"))
+    import problem as P
+
+    n, p = inst["n"], len(params) // 2
+    z = 1 - 2 * ((np.arange(1 << n)[:, None] >> np.arange(n)) & 1)
+    diag = sum(J * z[:, i] * z[:, j] for i, j, J in P.build_hamiltonian(inst)["terms"])
+    psi = np.full(1 << n, 2 ** (-n / 2), dtype=complex)
+    for layer in range(p):
+        gamma, beta = params[layer], params[p + layer]
+        psi = (psi * np.exp(-1j * gamma * diag)).reshape((2,) * n)
+        rx = np.array([[np.cos(beta), -1j * np.sin(beta)], [-1j * np.sin(beta), np.cos(beta)]])
+        for q in range(n):
+            psi = np.moveaxis(np.tensordot(rx, psi, axes=([1], [n - 1 - q])), 0, n - 1 - q)
+        psi = psi.reshape(-1)
+    return np.abs(psi) ** 2
+
+
+def fig_pipeline(params_path, n=6, seed=0, p=4):
+    """Schematic of the whole method on one real instance (n6_s0): the jobs and
+    their couplings, the circuit with one ZZ gate per coupling, the exact outcome
+    probabilities for the angles E6 optimised, and the schedule the best shot gives.
+    Nothing in it is invented: every number comes from src/problem.py or E6."""
+    import json
+    from matplotlib.patches import Arc, Circle, FancyArrowPatch, FancyBboxPatch, Rectangle
+
+    sys.path.insert(0, str(ROOT / "src"))
+    import problem as P
+
+    inst = P.generate_instance(n, seed)
+    raw = inst["weights_raw"]
+    w = P.normalized_weights(inst)
+    conflicts = {tuple(e) for e in inst["edges"]}
+    terms = P.build_hamiltonian(inst)["terms"]
+    ref = P.brute_force(inst, return_costs=True)
+    best = ref["opt_states"][0]
+    angles = next(r["params"] for r in map(json.loads, open(params_path))
+                  if r["instance_id"] == inst["id"] and r["p"] == p)
+    prob = _qaoa_probabilities(inst, angles)
+    costs = np.asarray(ref["costs"])
+    order = np.lexsort((np.arange(len(costs)), np.round(costs, 9)))   # lowest cost first
+    optimal = {P.bitstring_to_index(b) for b in ref["opt_states"]}
+    p_opt = sum(prob[k] for k in optimal)
+
+    blue, aqua, orange = SLOTS["blue"], SLOTS["aqua"], SLOTS["orange"]
+    node_colour = {"0": blue, "1": aqua}
+    width_u, height_u = 27.0, 9.45                      # drawing units: 3 per inch
+    fig = plt.figure(figsize=(9, 3.15), dpi=200)
+    fig.set_facecolor(SURFACE)
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_xlim(0, width_u)
+    ax.set_ylim(0, height_u)
+    ax.axis("off")
+
+    def card(x, y, wd, ht, number, title):
+        ax.add_patch(FancyBboxPatch((x, y), wd, ht, boxstyle="round,pad=0,rounding_size=0.22",
+                                    facecolor="white", edgecolor=GRID, linewidth=1, zorder=0))
+        ax.add_patch(Circle((x + 0.52, y + ht - 0.5), 0.25, facecolor=INK, edgecolor="none", zorder=2))
+        ax.text(x + 0.52, y + ht - 0.51, str(number), fontsize=7.5, color="white", fontweight="bold",
+                ha="center", va="center", zorder=3)
+        ax.text(x + 0.95, y + ht - 0.51, title, fontsize=9, color=INK, fontweight="bold",
+                ha="left", va="center", zorder=3)
+
+    def small(x, y, text, ha="center", colour=INK_SECONDARY, size=7.5, **kw):
+        ax.text(x, y, text, fontsize=size, color=colour, ha=ha, va="center", **kw)
+
+    def arrow(start, end):
+        ax.add_patch(FancyArrowPatch(start, end, arrowstyle="-|>", mutation_scale=11, color=INK_MUTED,
+                                     linewidth=1.3, shrinkA=0, shrinkB=0, zorder=2))
+
+    def coupling_style(i, j, J):
+        """Same encoding in the graph and in the circuit: width = strength, orange = conflict."""
+        return dict(color=orange if (i, j) in conflicts else INK_MUTED, linewidth=0.5 + 1.9 * J,
+                    solid_capstyle="round")
+
+    # 1 -- the instance as its Ising graph.
+    card(0.15, 0.15, 5.95, 9.15, 1, "Jobs and couplings")
+    cx, cy, radius = 3.12, 5.05, 2.1
+    theta = np.pi / 2 - 2 * np.pi * np.arange(n) / n
+    pos = [(cx + radius * np.cos(a), cy + radius * np.sin(a)) for a in theta]
+    for i, j, J in sorted(terms, key=lambda t: (t[0], t[1]) in conflicts):
+        ax.plot([pos[i][0], pos[j][0]], [pos[i][1], pos[j][1]], zorder=1, **coupling_style(i, j, J))
+    for i, (x, y) in enumerate(pos):
+        ax.add_patch(Circle((x, y), 0.36 + 0.40 * np.sqrt(w[i]), facecolor="white",
+                            edgecolor=INK_SECONDARY, linewidth=1.1, zorder=3))
+        ax.text(x, y - 0.02, str(raw[i]), fontsize=9, color=INK, ha="center", va="center", zorder=4)
+    ax.plot([0.55, 1.25], [1.5, 1.5], color=INK_MUTED, linewidth=1.8, solid_capstyle="round")
+    small(1.45, 1.5, r"balance term, $2w_iw_j$", ha="left")
+    ax.plot([0.55, 1.25], [0.8, 0.8], color=orange, linewidth=2.2, solid_capstyle="round")
+    small(1.45, 0.8, r"conflict, adds $\lambda$", ha="left")
+
+    arrow((6.25, 4.7), (6.85, 4.7))
+
+    # 2 -- the circuit: one wire per job, one ZZ gate per coupling.
+    card(7.0, 0.15, 10.3, 9.15, 2, "QAOA circuit, one qubit per job")
+    wires = [7.25 - 0.8 * q for q in range(n)]
+    gate_x = [9.55 + 0.29 * k for k in range(len(terms))]
+    box = dict(facecolor="white", edgecolor=INK_SECONDARY, linewidth=1, zorder=3)
+    for q, y in enumerate(wires):
+        ax.plot([7.95, 16.25], [y, y], color=AXIS, linewidth=1, zorder=1)
+        ax.add_patch(Circle((7.62, y), 0.33, zorder=3, facecolor="white", edgecolor=INK_SECONDARY, linewidth=1))
+        ax.text(7.62, y - 0.02, str(raw[q]), fontsize=7.5, color=INK, ha="center", va="center", zorder=4)
+        ax.add_patch(Rectangle((8.22, y - 0.28), 0.56, 0.56, **box))
+        ax.text(8.5, y - 0.02, "H", fontsize=7.5, color=INK, ha="center", va="center", zorder=4)
+        ax.add_patch(Rectangle((14.1, y - 0.28), 0.9, 0.56, **box))
+        ax.text(14.55, y - 0.02, r"$R_X$", fontsize=7.5, color=INK, ha="center", va="center", zorder=4)
+        ax.add_patch(Rectangle((15.67, y - 0.28), 0.56, 0.56, **box))
+        ax.add_patch(Arc((15.95, y - 0.13), 0.34, 0.34, theta1=0, theta2=180, color=INK_SECONDARY,
+                         linewidth=0.9, zorder=4))
+        ax.plot([15.95, 16.08], [y - 0.13, y + 0.15], color=INK_SECONDARY, linewidth=0.9, zorder=4)
+        ax.text(16.78, y - 0.02, best[q], fontsize=9.5, color=node_colour[best[q]], fontweight="bold",
+                ha="center", va="center")
+    for x, (i, j, J) in zip(gate_x, terms):
+        style = coupling_style(i, j, J)
+        ax.plot([x, x], [wires[i], wires[j]], zorder=2, **style)
+        ax.plot([x, x], [wires[i], wires[j]], linestyle="none", marker="o", markersize=3.4,
+                color=style["color"], zorder=3)
+    ax.add_patch(FancyBboxPatch((9.2, 2.85), 6.05, 4.8, boxstyle="round,pad=0,rounding_size=0.18",
+                                facecolor="none", edgecolor=INK_MUTED, linewidth=0.9,
+                                linestyle=(0, (3, 2)), zorder=2))
+    small(12.22, 8.0, r"one layer, repeated $p$ times")
+    small(16.78, 8.05, "best\nshot", size=7, linespacing=1.0)
+    small(11.58, 2.38, r"$ZZ(2\gamma J_{ij})$ on every pair")
+    small(14.55, 2.38, r"$R_X(2\beta)$")
+    # Feedback loop: measurements -> classical optimiser -> angles of every layer.
+    ax.add_patch(FancyBboxPatch((9.8, 0.72), 5.6, 0.78, boxstyle="round,pad=0,rounding_size=0.18",
+                                facecolor=SURFACE, edgecolor=AXIS, linewidth=0.9, zorder=2))
+    small(12.6, 1.1, r"optimiser tunes $\gamma, \beta$ to lower $\langle H_C \rangle$")
+    ax.plot([15.95, 15.95], [2.95, 1.11], color=INK_MUTED, linewidth=1.3, solid_capstyle="round")
+    arrow((15.95, 1.11), (15.45, 1.11))
+    ax.plot([9.8, 9.45], [1.11, 1.11], color=INK_MUTED, linewidth=1.3, solid_capstyle="round")
+    arrow((9.45, 1.11), (9.45, 2.8))
+
+    arrow((17.45, 7.3), (18.05, 7.3))
+
+    # 3 -- exact outcome probabilities for the angles optimised in E6.
+    card(18.2, 5.25, 8.65, 4.05, 3, f"Outcome probabilities at $p = {p}$")
+    x0, base, span, top = 18.7, 5.95, 7.7, 1.75
+    step = span / len(order)
+    for rank, k in enumerate(order):
+        ax.add_patch(Rectangle((x0 + rank * step + 0.012, base), step - 0.024, top * prob[k] / prob.max(),
+                               facecolor=INK if k in optimal else AXIS, edgecolor="none", zorder=2))
+    uniform_y = base + top / (len(order) * prob.max())
+    ax.plot([x0, x0 + span], [uniform_y, uniform_y], color=INK_MUTED, linewidth=0.9,
+            linestyle=(0, (3, 2)), zorder=3)
+    ax.plot([x0, x0 + span], [base, base], color=AXIS, linewidth=1, zorder=3)
+    ax.add_patch(Rectangle((21.45, 7.73), 0.26, 0.26, facecolor=INK, edgecolor="none"))
+    small(21.9, 7.86, f"2 optimal schedules: {100 * p_opt:.0f} %", ha="left")
+    ax.plot([21.4, 21.76], [7.26, 7.26], color=INK_MUTED, linewidth=0.9, linestyle=(0, (3, 2)))
+    small(21.9, 7.26, f"random guessing: {100 * len(optimal) / len(order):.0f} %", ha="left")
+    small(x0, 5.6, f"all {len(order)} bitstrings, lowest cost first", ha="left", size=7)
+
+    arrow((22.5, 5.15), (22.5, 4.55))
+
+    # 4 -- what the best shot means: bit 0 = node A, bit 1 = node B.
+    card(18.2, 0.15, 8.65, 4.3, 4, "Best shot as a schedule")
+    unit, bar_x, bar_h = 0.175, 20.35, 0.8
+    centre = {}
+    for bit, y, name in (("0", 2.35, "Node A"), ("1", 0.75, "Node B")):
+        colour = node_colour[bit]
+        jobs = [i for i in range(n) if best[i] == bit]
+        x = bar_x
+        for i in jobs:
+            ax.add_patch(Rectangle((x, y), raw[i] * unit, bar_h, facecolor=colour, edgecolor="white",
+                                   linewidth=1.5, zorder=3))
+            ax.text(x + raw[i] * unit / 2, y + bar_h / 2 - 0.02, str(raw[i]), fontsize=8, color="white",
+                    fontweight="bold", ha="center", va="center", zorder=4)
+            centre[i] = (x + raw[i] * unit / 2, y)
+            x += raw[i] * unit
+        small(18.6, y + bar_h / 2 + 0.17, name, ha="left", colour=colour, size=8, fontweight="bold")
+        small(18.6, y + bar_h / 2 - 0.2, f"bit {bit}", ha="left", size=7)
+        small(x + 0.25, y + bar_h / 2, f"load {sum(raw[i] for i in jobs)}", ha="left", colour=INK, size=8)
+    for i, j in conflicts:
+        (xa, ya), (xb, yb) = sorted((centre[i], centre[j]), key=lambda c: -c[1])
+        ax.plot([xa, xb], [ya, yb + bar_h], color=orange, linewidth=2, solid_capstyle="round", zorder=2)
+
+    fig.savefig(FIGURES / "pipeline.png", facecolor=SURFACE)
+    plt.close(fig)
+    return p_opt
+
+
 def main():
     FIGURES.mkdir(exist_ok=True)
     by_method = load_baselines()
@@ -508,6 +734,10 @@ def main():
         if (ROOT / "results" / name).exists():
             fig(ROOT / "results" / name)
             count += 1
+    e6_params = ROOT / "results" / "E6" / "E6_params.jsonl"
+    if e6_params.exists():
+        fig_pipeline(e6_params)
+        count += 1
     print(f"wrote {count} figures to {FIGURES}")
 
 

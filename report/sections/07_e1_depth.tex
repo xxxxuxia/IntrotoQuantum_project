@@ -8,15 +8,19 @@ E1 runs INTERP-initialised QAOA at $p = 1, \dots, 6$ on ten instances per size $
 
 \begin{figure}[p]
   \centering
-  \includegraphics[width=0.8\linewidth]{E1_approx_ratio.png}\\[6pt]
-  \includegraphics[width=0.8\linewidth]{E1_p_opt.png}
+  \includegraphics[width=\linewidth]{pipeline.png}
+  \caption{The method on one real six-job instance. (1)~Jobs with their runtimes; line width is coupling strength and orange marks a conflict. (2)~One $ZZ$ gate per coupling. (3)~Exact probabilities with the angles from E6. (4)~An optimal bitstring read as a schedule.}
+  \label{fig:pipeline}
+  \vspace{10pt}
+  \includegraphics[width=0.73\linewidth]{E1_approx_ratio.png}\\[6pt]
+  \includegraphics[width=0.73\linewidth]{E1_p_opt.png}
   \caption{E1. Top: approximation ratio of the mean cost against depth. Bottom: probability that one shot is optimal (log scale). $p = 0$ is random guessing.}
   \label{fig:e1}
 \end{figure}
 
-Quality improves with every layer (Fig.~\ref{fig:e1}, top): from $0.71$--$0.73$ for random guessing to $0.83$--$0.87$ at $p = 1$ and $0.93$--$0.97$ at $p = 6$.
-No instance ever got worse with depth, but the gains shrink: at $n = 8$ layer 2 adds $0.045$ and layer 6 only $0.008$.
-$n = 14$ and $16$ end below $n = 18$ and $20$ because of two instances whose INTERP chain starts in a poor basin ($r \approx 0.71$ at $p = 1$) and never exceeds $0.74$; without them both sizes average $0.95$.
+Quality improves with every layer (Fig.~\ref{fig:e1}, top): from about $0.72$ for random guessing to $0.93$--$0.97$ at $p = 6$.
+No instance ever got worse with depth, but each extra layer adds less.
+$n = 14$ and $16$ end below $n = 18$ and $20$ because of two instances whose INTERP chain starts in a poor basin and never recovers; without them both sizes average $0.95$.
 
 $P(\text{opt})$ at $p = 6$ falls from $0.24$ at $n = 8$ to $0.035$ at $n = 20$ (Fig.~\ref{fig:e1}, bottom), but random guessing falls as $2^{-n}$, so QAOA's advantage grows from 19 to about $17{,}000$ times.
 From $p = 3$ the best of 10{,}000 shots is an exact optimum on all 70 instances.

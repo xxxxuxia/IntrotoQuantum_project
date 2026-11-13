@@ -43,11 +43,11 @@ Energies are converted back with $C = s \langle H_C \rangle$ before any metric i
 \paragraph{Mirror symmetry.}
 \label{sec:symmetry}
 Swapping the two nodes, $z \mapsto -z$, never changes the cost, so every schedule has a mirror image with the same cost, and QAOA gives both exactly the same probability.
-Integer runtimes often allow several balanced splits, and between 10\,\% and 45\,\% of our instances have more than two optimal bitstrings, so $P(\text{opt})$ counts \emph{all} of them.
+Integer runtimes often allow several balanced splits, so many instances have more than two optimal bitstrings, and $P(\text{opt})$ counts \emph{all} of them.
 
 \paragraph{Penalty weight.}
 \label{sec:lambda}
 A small $\lambda$ lets the optimum accept a conflict for better balance; a large $\lambda$ dominates $s$ and shrinks the balance couplings after scaling, which makes balance harder for QAOA to resolve.
 We swept $\lambda \in \{0.1, 0.5, 1, 2, 5\}$ on 20 instances at each even $n$ from 6 to 24 and chose the smallest $\lambda$ whose optimum has zero violations on at least 90\,\% of instances at every size.
-At $\lambda = 0.1$ this fraction drops to 50\,\% at $n = 24$, while $\lambda = 0.5$ reaches 90--100\,\% everywhere, so we use $\lambda = 0.5$.
+The value $\lambda = 0.1$ fails this test at most sizes and $\lambda = 0.5$ passes at every size, so we use $\lambda = 0.5$.
 We report violations as a separate metric for every method.

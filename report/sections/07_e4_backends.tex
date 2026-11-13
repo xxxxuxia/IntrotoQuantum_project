@@ -20,8 +20,9 @@ Two settings hit the 24-hour limit, leaving one of three instances for GPU fp64 
   \label{fig:e5}
 \end{figure}
 
-At $n = 20$ the CPU takes $76$\,s and the GPU $31$\,ms, about $2{,}500$ times faster (Fig.~\ref{fig:e4}, left).
+At $n = 20$ the CPU (fp64) takes $76$\,s and the GPU $31$\,ms in fp32, about $2{,}500$ times faster, or $1{,}300$ times at equal precision (GPU fp64: $60$\,ms; Fig.~\ref{fig:e4}, left).
 Each extra qubit doubles the amplitudes and the gate count also grows with $n$, so the CPU's cost grows five- to six-fold every two qubits, while the GPU stays nearly flat until about $n = 22$, where the work starts to fill it.
-fp32 and fp64 cost about the same on the GPU up to $n = 18$, but fp64 is $1.9\times$ slower at $n = 20$ and $5.8$--$5.9\times$ slower from $n = 26$.
+
+fp32 and fp64 cost about the same on the GPU up to $n = 18$, but fp64 is about six times slower from $n = 24$.
 That is more than the $2\times$ of memory traffic alone, as the A40 has much lower fp64 throughput.
-Measured GPU memory matches $2^n$ amplitudes at 8 or 16 bytes within 2\,\% from $n = 24$ (Fig.~\ref{fig:e4}, right), so one 48\,GB A40 holds at most 32 qubits in fp32 and 31 in fp64.
+Measured GPU memory matches $2^n$ amplitudes at 8 or 16 bytes each from $n = 24$ (Fig.~\ref{fig:e4}, right), so one 48\,GB A40 holds at most 32 qubits in fp32 and 31 in fp64.

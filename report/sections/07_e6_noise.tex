@@ -5,10 +5,10 @@
 \subsection{E6: Robustness to noise (RQ3)}
 \label{sec:e6}
 
-E6 takes the noiselessly optimised angles for ten instances at $n = 6$ and $8$ and $p = 1$--$4$, and evaluates them with CUDA-Q's exact density-matrix simulator under depolarising noise: each CX gate fails with probability $p_{\text{err}} \in \{0, 0.001, 0.005, 0.01\}$ and each single-qubit gate with $p_{\text{err}}/10$.
+E6 takes the noiselessly optimised angles for ten instances at $n = 6$ and $8$ and $p = 1$--$4$, and runs them on CUDA-Q's density-matrix simulator under depolarising noise: each CX gate fails with probability $p_{\text{err}} \in \{0, 0.001, 0.005, 0.01\}$ and each single-qubit gate with $p_{\text{err}}/10$.
 
-At $p_{\text{err}} = 0.001$ quality still improves with every layer and ends only $0.02$ below the noiseless value at $n = 8$ and $p = 4$ ($0.932$ against $0.952$; Fig.~\ref{fig:e6}).
+At $p_{\text{err}} = 0.001$ quality still improves with every layer and ends only $0.02$ below the noiseless value at $n = 8$ and $p = 4$ (Fig.~\ref{fig:e6}).
 At $0.005$ it stops improving after two or three layers.
-At $0.01$ depth becomes harmful: at $n = 8$ the ratio falls from $0.841$ at $p = 1$ to $0.810$ at $p = 4$, all ten instances end lower, and $P(\text{opt})$ at $p = 4$ drops from $0.17$ without noise to $0.05$.
-Each layer adds two CX gates per pair of jobs, 56 at $n = 8$, so at $p = 4$ only $0.99^{224} \approx 10\,\%$ of runs avoid every two-qubit error.
-The best depth therefore depends on the hardware's error rate.
+At $0.01$ depth becomes harmful: at $n = 8$ the ratio falls from $0.841$ at $p = 1$ to $0.810$ at $p = 4$, and all ten instances end lower.
+Each layer adds two CX gates per pair of jobs, 56 at $n = 8$, so at $p = 4$ only $0.99^{224} \approx 10\,\%$ of runs avoid every CX error.
+So the best depth depends on the error rate.

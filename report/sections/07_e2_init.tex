@@ -18,7 +18,7 @@ E2 compares four starting points at $p = 6$ on the same ten instances per size $
   \label{fig:e6}
 \end{figure}
 
-Transfer followed by optimisation gives the best quality at every size, with a mean ratio of $0.954$, against $0.945$ for INTERP, $0.933$ for transfer without optimisation and $0.898$ for random starts (Fig.~\ref{fig:e2}).
-It is also cheap: about 360 evaluations, 40\,\% of INTERP's 910 over its full chain and 15\,\% of the 2{,}430 used by random starts.
-The gap to INTERP comes from only two instances: the two on which INTERP is stuck in E1, where transfer reaches $0.961$ and $0.915$; without them both average $0.955$.
-Even with no optimisation, transferred angles reach $0.933$, so good angles are similar across instances and sizes, which E5 exploits.
+Transfer followed by optimisation ties INTERP at $n = 10$ and gives the best quality at every larger size, with a mean ratio of $0.954$ against $0.898$ for random starts (Fig.~\ref{fig:e2}).
+It is also cheap: about 360 evaluations, against 910 for INTERP's full chain and 2{,}430 for random starts.
+Its lead over INTERP comes from only two instances, the two on which INTERP is stuck in E1; without them the two methods are level.
+Even with no optimisation, transferred angles reach $0.933$, so good angles are similar across instances and sizes, as reported for other problems~\cite{brandao2018, galda2021}, which E5 exploits.
