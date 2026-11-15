@@ -13,7 +13,7 @@ and the mixer is $R_X(2\beta)$ on every qubit, so a layer has $n(n-1)$ CX gates.
 Since $H_C$ is real, the angles $\boldsymbol\theta = (\boldsymbol\gamma, \boldsymbol\beta)$ and $-\boldsymbol\theta$ give the same probabilities, so we flip every angle vector to $\gamma_1 \geq 0$ before comparing or averaging angles.
 
 \paragraph{Optimisation.}
-COBYLA (initial step $0.2$\,rad, at most 500 evaluations) minimises the exact energy $\langle H_C \rangle$, free of shot noise.
+The gradient-free optimiser COBYLA (initial step $0.2$\,rad, at most 500 evaluations) minimises the exact energy $\langle H_C \rangle$, free of shot noise.
 
 \paragraph{Initial angles.}
 E1 starts $p = 1$ from a linear ramp and then uses INTERP~\cite{zhou2020}, so each instance is optimised as a chain $p = 1, \dots, 6$.
@@ -21,7 +21,7 @@ E2 also tests the best of five random starts, and \emph{transfer}: the median op
 
 \paragraph{Metrics.}
 After optimisation we draw 10{,}000 shots.
-The exact $C_{\min}$, $C_{\max}$ and optimal bitstrings come from brute force for $n \leq 24$ (CP-SAT above).
+The exact $C_{\min}$, $C_{\max}$ and optimal bitstrings come from brute force for $n \leq 24$ (the exact solver CP-SAT above).
 We report the approximation ratio of the mean cost, $r = (C_{\max} - \langle C \rangle)/(C_{\max} - C_{\min})$, for which random guessing already scores $0.71$--$0.73$;
 the success probability $P(\text{opt})$, the fraction of shots that hit any optimal bitstring;
 and the best of the 10{,}000 shots, which is what QAOA would return in practice and the fair comparison with classical solvers.

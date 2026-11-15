@@ -21,5 +21,5 @@ As $p \to \infty$ QAOA can imitate adiabatic evolution and reach the ground stat
 INTERP~\cite{zhou2020} starts depth $p + 1$ by interpolating the optimised angles of depth $p$.
 
 \paragraph{GPU simulation.}
-A statevector simulator stores all $2^n$ amplitudes (8\,GiB for 30 qubits in single precision, 16\,GiB in double), and every gate updates every amplitude: many simple, independent updates to one large array, which suits GPUs.
+A statevector simulator stores all $2^n$ amplitudes (8\,GiB for 30 qubits in single precision, fp32, and 16\,GiB in double, fp64), and every gate updates every amplitude: many simple, independent updates to one large array, which suits GPUs.
 CUDA-Q~\cite{cudaq} runs the same circuit on CPU or GPU simulators; noise needs a density matrix with $4^n$ entries, which limits our noise study to small $n$.
