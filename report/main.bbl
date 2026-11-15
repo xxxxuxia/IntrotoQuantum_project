@@ -18,7 +18,7 @@ Andrew Lucas.
 \bibitem{cudaq}
 {NVIDIA}.
 \newblock {CUDA-Q}: a platform for hybrid quantum-classical computing.
-\newblock Software and documentation, 2025.
+\newblock Software, 2025.
 
 \bibitem{zhou2020}
 Leo Zhou, Sheng-Tao Wang, Soonwon Choi, Hannes Pichler, and Mikhail~D. Lukin.
@@ -30,5 +30,18 @@ Leo Zhou, Sheng-Tao Wang, Soonwon Choi, Hannes Pichler, and Mikhail~D. Lukin.
 Narendra Karmarkar and Richard~M. Karp.
 \newblock The differencing method of set partitioning.
 \newblock Technical report, University of California, Berkeley, 1982.
+
+\bibitem{brandao2018}
+Fernando G. S.~L. Brand{\~a}o, Michael Broughton, Edward Farhi, Sam Gutmann,
+  and Hartmut Neven.
+\newblock For fixed control parameters the quantum approximate optimization
+  algorithm's objective function value concentrates for typical instances.
+\newblock {\em arXiv preprint arXiv:1812.04170}, 2018.
+
+\bibitem{galda2021}
+Alexey Galda, Xiaoyuan Liu, Danylo Lykov, Yuri Alexeev, and Ilya Safro.
+\newblock Transferability of optimal {QAOA} parameters between random graphs.
+\newblock In {\em IEEE Int. Conf. on Quantum Computing and Engineering (QCE)},
+  pages 171--180, 2021.
 
 \end{thebibliography}

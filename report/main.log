@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.11.13)  13 NOV 2026 15:55
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.11.13)  15 NOV 2026 14:37
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -314,24 +314,24 @@ File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 18.
-LaTeX Font Info:    ... okay on input line 18.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -389,19 +389,19 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 18.
+Package hyperref Info: Link coloring OFF on input line 22.
 
 (./main.out) (./main.out)
 \@outlinefile=\write3
 \openout3 = `main.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 20.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 24.
 
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 20.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 24.
 
 
 (/usr/local/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -413,53 +413,59 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 (./sections/03_formulation.tex [2]) (./sections/04_method.tex)
 (./sections/05_implementation.tex) (./sections/06_setup.tex [3])
 (./sections/07_results.tex (./sections/07_e1_depth.tex
-<../figures/E1_approx_ratio.png, id=132, 498.1812pt x 317.988pt>
+<../figures/pipeline.png, id=135, 650.43pt x 227.6505pt>
+File: ../figures/pipeline.png Graphic file (type png)
+<use ../figures/pipeline.png>
+Package pdftex.def Info: ../figures/pipeline.png  used on input line 11.
+(pdftex.def)             Requested size: 455.24411pt x 159.34036pt.
+<../figures/E1_approx_ratio.png, id=137, 498.1812pt x 317.988pt>
 File: ../figures/E1_approx_ratio.png Graphic file (type png)
 <use ../figures/E1_approx_ratio.png>
-Package pdftex.def Info: ../figures/E1_approx_ratio.png  used on input line 11.
+Package pdftex.def Info: ../figures/E1_approx_ratio.png  used on input line 15.
 
-(pdftex.def)             Requested size: 364.19667pt x 232.4738pt.
-<../figures/E1_p_opt.png, id=134, 498.1812pt x 317.988pt>
+(pdftex.def)             Requested size: 332.32625pt x 212.12894pt.
+<../figures/E1_p_opt.png, id=138, 498.1812pt x 317.988pt>
 File: ../figures/E1_p_opt.png Graphic file (type png)
 <use ../figures/E1_p_opt.png>
-Package pdftex.def Info: ../figures/E1_p_opt.png  used on input line 12.
-(pdftex.def)             Requested size: 364.19667pt x 232.4738pt.
+Package pdftex.def Info: ../figures/E1_p_opt.png  used on input line 16.
+(pdftex.def)             Requested size: 332.32625pt x 212.12894pt.
 )
 (./sections/07_e2_init.tex
-<../figures/E2_init.png, id=137, 714.9912pt x 296.307pt>
+<../figures/E2_init.png, id=141, 714.9912pt x 296.307pt>
 File: ../figures/E2_init.png Graphic file (type png)
 <use ../figures/E2_init.png>
 Package pdftex.def Info: ../figures/E2_init.png  used on input line 12.
 (pdftex.def)             Requested size: 455.24411pt x 188.66376pt.
-<../figures/E6_noise.png, id=138, 715.473pt x 300.6432pt>
+<../figures/E6_noise.png, id=142, 715.473pt x 300.6432pt>
 File: ../figures/E6_noise.png Graphic file (type png)
 <use ../figures/E6_noise.png>
 Package pdftex.def Info: ../figures/E6_noise.png  used on input line 16.
 (pdftex.def)             Requested size: 455.24411pt x 191.29164pt.
-) (./sections/07_e3_baselines.tex [4] [5 <../figures/E1_approx_ratio.png> <../f
-igures/E1_p_opt.png>] [6 <../figures/E2_init.png> <../figures/E6_noise.png>]
-<../figures/qaoa_vs_baselines.png, id=160, 497.2176pt x 317.988pt>
+) (./sections/07_e3_baselines.tex [4] [5 <../figures/pipeline.png> <../figures/
+E1_approx_ratio.png> <../figures/E1_p_opt.png>]
+[6 <../figures/E2_init.png> <../figures/E6_noise.png>]
+<../figures/qaoa_vs_baselines.png, id=170, 497.2176pt x 317.988pt>
 File: ../figures/qaoa_vs_baselines.png Graphic file (type png)
 <use ../figures/qaoa_vs_baselines.png>
 Package pdftex.def Info: ../figures/qaoa_vs_baselines.png  used on input line 1
 2.
 (pdftex.def)             Requested size: 364.19667pt x 232.9299pt.
-) (./sections/07_e4_backends.tex
-<../figures/E4_timing.png, id=162, 714.5094pt x 296.307pt>
+)
+(./sections/07_e4_backends.tex
+<../figures/E4_timing.png, id=172, 714.5094pt x 296.307pt>
 File: ../figures/E4_timing.png Graphic file (type png)
 <use ../figures/E4_timing.png>
 Package pdftex.def Info: ../figures/E4_timing.png  used on input line 14.
 (pdftex.def)             Requested size: 455.24411pt x 188.79034pt.
-<../figures/E5_largen.png, id=163, 715.473pt x 296.307pt>
+<../figures/E5_largen.png, id=173, 715.473pt x 296.307pt>
 File: ../figures/E5_largen.png Graphic file (type png)
 <use ../figures/E5_largen.png>
 Package pdftex.def Info: ../figures/E5_largen.png  used on input line 18.
 (pdftex.def)             Requested size: 455.24411pt x 188.53264pt.
-)
-(./sections/07_e5_largen.tex) (./sections/07_e6_noise.tex))
-(./sections/08_discussion.tex [7]) (./sections/09_conclusion.tex) (./main.bbl)
-[8] [9 <../figures/qaoa_vs_baselines.png>] [10 <../figures/E4_timing.png> <../f
-igures/E5_largen.png>] (./main.aux)
+) (./sections/07_e5_largen.tex)
+(./sections/07_e6_noise.tex)) (./sections/08_discussion.tex [7])
+(./sections/09_conclusion.tex) (./main.bbl) [8] [9 <../figures/qaoa_vs_baseline
+s.png>] [10 <../figures/E4_timing.png> <../figures/E5_largen.png>] (./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
@@ -468,13 +474,13 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 5506C8C7776D52860020383FF8BCBB21;2393.
  ) 
 Here is how much of TeX's memory you used:
- 12183 strings out of 467525
- 199245 string characters out of 5418981
+ 12199 strings out of 467525
+ 199585 string characters out of 5418981
  646986 words of memory out of 5000000
- 40861 multiletter control sequences out of 15000+600000
+ 40874 multiletter control sequences out of 15000+600000
  640454 words of font info for 88 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,9n,79p,409b,455s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,13n,79p,400b,455s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><
@@ -492,10 +498,10 @@ e/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive
 026/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/20
 26/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/202
 6/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on main.pdf (10 pages, 840494 bytes).
+Output written on main.pdf (10 pages, 968487 bytes).
 PDF statistics:
- 284 PDF objects out of 1000 (max. 8388607)
- 221 compressed objects within 3 object streams
- 60 named destinations out of 1000 (max. 500000)
- 156 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 294 PDF objects out of 1000 (max. 8388607)
+ 229 compressed objects within 3 object streams
+ 63 named destinations out of 1000 (max. 500000)
+ 161 words of extra memory for PDF output out of 10000 (max. 10000000)
 

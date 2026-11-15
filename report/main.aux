@@ -10,16 +10,16 @@
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
 \newlabel{sec:intro}{{1}{1}{Introduction}{section.1}{}}
 \newlabel{sec:intro@cref}{{[section][1][]1}{[1][1][]1}{}{}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{1}{section.2}\protected@file@percent }
-\newlabel{sec:background}{{2}{1}{Background}{section.2}{}}
-\newlabel{sec:background@cref}{{[section][2][]2}{[1][1][]1}{}{}{}}
-\@writefile{toc}{\contentsline {paragraph}{Ising models.}{1}{section*.1}\protected@file@percent }
 \citation{farhi2014}
 \citation{farhi2014}
 \citation{zhou2020}
 \citation{cudaq}
 \citation{lucas2014}
 \citation{karmarkar1982}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{2}{section.2}\protected@file@percent }
+\newlabel{sec:background}{{2}{2}{Background}{section.2}{}}
+\newlabel{sec:background@cref}{{[section][2][]2}{[1][1][]2}{}{}{}}
+\@writefile{toc}{\contentsline {paragraph}{Ising models.}{2}{section*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{QAOA.}{2}{section*.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{GPU simulation.}{2}{section*.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {3}Problem Formulation}{2}{section.3}\protected@file@percent }
@@ -53,6 +53,8 @@
 \@writefile{toc}{\contentsline {section}{\numberline {5}Implementation}{3}{section.5}\protected@file@percent }
 \newlabel{sec:implementation}{{5}{3}{Implementation}{section.5}{}}
 \newlabel{sec:implementation@cref}{{[section][5][]5}{[1][3][]3}{}{}{}}
+\citation{brandao2018}
+\citation{galda2021}
 \@writefile{toc}{\contentsline {section}{\numberline {6}Experimental Setup}{4}{section.6}\protected@file@percent }
 \newlabel{sec:setup}{{6}{4}{Experimental Setup}{section.6}{}}
 \newlabel{sec:setup@cref}{{[section][6][]6}{[1][4][]4}{}{}{}}
@@ -68,15 +70,18 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.2}E2: Initialisation strategies}{4}{subsection.7.2}\protected@file@percent }
 \newlabel{sec:e2}{{7.2}{4}{E2: Initialisation strategies}{subsection.7.2}{}}
 \newlabel{sec:e2@cref}{{[subsection][2][7]7.2}{[1][4][]4}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces E1. Top: approximation ratio of the mean cost against depth. Bottom: probability that one shot is optimal (log scale). $p = 0$ is random guessing.}}{5}{figure.1}\protected@file@percent }
-\newlabel{fig:e1}{{1}{5}{E1. Top: approximation ratio of the mean cost against depth. Bottom: probability that one shot is optimal (log scale). $p = 0$ is random guessing}{figure.1}{}}
-\newlabel{fig:e1@cref}{{[figure][1][]1}{[1][4][]5}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces E2 at $p = 6$. Left: approximation ratio of the mean cost. Right: circuit evaluations used by COBYLA (log scale); for INTERP this counts the whole chain $p = 1, \dots  , 6$.}}{6}{figure.2}\protected@file@percent }
-\newlabel{fig:e2}{{2}{6}{E2 at $p = 6$. Left: approximation ratio of the mean cost. Right: circuit evaluations used by COBYLA (log scale); for INTERP this counts the whole chain $p = 1, \dots , 6$}{figure.2}{}}
-\newlabel{fig:e2@cref}{{[figure][2][]2}{[1][4][]6}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces E6. Approximation ratio of the mean cost against depth for each two-qubit error rate, at $n = 6$ (left) and $n = 8$ (right).}}{6}{figure.3}\protected@file@percent }
-\newlabel{fig:e6}{{3}{6}{E6. Approximation ratio of the mean cost against depth for each two-qubit error rate, at $n = 6$ (left) and $n = 8$ (right)}{figure.3}{}}
-\newlabel{fig:e6@cref}{{[figure][3][]3}{[1][4][]6}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces The method on one real six-job instance. (1)~Jobs with their runtimes; line width is coupling strength and orange marks a conflict. (2)~One $ZZ$ gate per coupling. (3)~Exact probabilities with the angles from E6. (4)~An optimal bitstring read as a schedule.}}{5}{figure.1}\protected@file@percent }
+\newlabel{fig:pipeline}{{1}{5}{The method on one real six-job instance. (1)~Jobs with their runtimes; line width is coupling strength and orange marks a conflict. (2)~One $ZZ$ gate per coupling. (3)~Exact probabilities with the angles from E6. (4)~An optimal bitstring read as a schedule}{figure.1}{}}
+\newlabel{fig:pipeline@cref}{{[figure][1][]1}{[1][4][]5}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces E1. Top: approximation ratio of the mean cost against depth. Bottom: probability that one shot is optimal (log scale). $p = 0$ is random guessing.}}{5}{figure.2}\protected@file@percent }
+\newlabel{fig:e1}{{2}{5}{E1. Top: approximation ratio of the mean cost against depth. Bottom: probability that one shot is optimal (log scale). $p = 0$ is random guessing}{figure.2}{}}
+\newlabel{fig:e1@cref}{{[figure][2][]2}{[1][4][]5}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces E2 at $p = 6$. Left: approximation ratio of the mean cost. Right: circuit evaluations used by COBYLA (log scale); for INTERP this counts the whole chain $p = 1, \dots  , 6$.}}{6}{figure.3}\protected@file@percent }
+\newlabel{fig:e2}{{3}{6}{E2 at $p = 6$. Left: approximation ratio of the mean cost. Right: circuit evaluations used by COBYLA (log scale); for INTERP this counts the whole chain $p = 1, \dots , 6$}{figure.3}{}}
+\newlabel{fig:e2@cref}{{[figure][3][]3}{[1][4][]6}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces E6. Approximation ratio of the mean cost against depth for each two-qubit error rate, at $n = 6$ (left) and $n = 8$ (right).}}{6}{figure.4}\protected@file@percent }
+\newlabel{fig:e6}{{4}{6}{E6. Approximation ratio of the mean cost against depth for each two-qubit error rate, at $n = 6$ (left) and $n = 8$ (right)}{figure.4}{}}
+\newlabel{fig:e6@cref}{{[figure][4][]4}{[1][4][]6}{}{}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {7.3}E3: Classical baselines (RQ2)}{7}{subsection.7.3}\protected@file@percent }
 \newlabel{sec:e3}{{7.3}{7}{E3: Classical baselines (RQ2)}{subsection.7.3}{}}
 \newlabel{sec:e3@cref}{{[subsection][3][7]7.3}{[1][4][]7}{}{}{}}
@@ -97,22 +102,24 @@
 \bibcite{cudaq}{4}
 \bibcite{zhou2020}{5}
 \bibcite{karmarkar1982}{6}
+\bibcite{brandao2018}{7}
+\bibcite{galda2021}{8}
 \@writefile{toc}{\contentsline {section}{\numberline {8}Discussion}{8}{section.8}\protected@file@percent }
 \newlabel{sec:discussion}{{8}{8}{Discussion}{section.8}{}}
-\newlabel{sec:discussion@cref}{{[section][8][]8}{[1][8][]8}{}{}{}}
+\newlabel{sec:discussion@cref}{{[section][8][]8}{[1][7][]8}{}{}{}}
 \@writefile{toc}{\contentsline {paragraph}{Strengths and weaknesses of QAOA.}{8}{section*.15}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{GPU and precision.}{8}{section*.16}\protected@file@percent }
 \@writefile{toc}{\contentsline {paragraph}{Limitations.}{8}{section*.17}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {9}Conclusion}{8}{section.9}\protected@file@percent }
 \newlabel{sec:conclusion}{{9}{8}{Conclusion}{section.9}{}}
 \newlabel{sec:conclusion@cref}{{[section][9][]9}{[1][8][]8}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces E3. QAOA at $p = 6$ (mean cost and best of 10{,}000 shots) against the four classical baselines at $n = 8$--$20$.}}{9}{figure.4}\protected@file@percent }
-\newlabel{fig:qaoa-vs-baselines}{{4}{9}{E3. QAOA at $p = 6$ (mean cost and best of 10{,}000 shots) against the four classical baselines at $n = 8$--$20$}{figure.4}{}}
-\newlabel{fig:qaoa-vs-baselines@cref}{{[figure][4][]4}{[1][7][]9}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces E4 at $p = 3$. Left: wall time per circuit evaluation (log scale). Right: GPU memory above an idle CUDA context against the $2^n$-amplitude prediction.}}{10}{figure.5}\protected@file@percent }
-\newlabel{fig:e4}{{5}{10}{E4 at $p = 3$. Left: wall time per circuit evaluation (log scale). Right: GPU memory above an idle CUDA context against the $2^n$-amplitude prediction}{figure.5}{}}
-\newlabel{fig:e4@cref}{{[figure][5][]5}{[1][7][]10}{}{}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces E5. Angles optimised at $n = 20$, reused without optimisation at $n = 20$--$28$. Left: approximation ratio by depth. Right: $P(\text  {opt})$ (log scale), a lower bound above $n = 24$.}}{10}{figure.6}\protected@file@percent }
-\newlabel{fig:e5}{{6}{10}{E5. Angles optimised at $n = 20$, reused without optimisation at $n = 20$--$28$. Left: approximation ratio by depth. Right: $P(\text {opt})$ (log scale), a lower bound above $n = 24$}{figure.6}{}}
-\newlabel{fig:e5@cref}{{[figure][6][]6}{[1][7][]10}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces E3. QAOA at $p = 6$ (mean cost and best of 10{,}000 shots) against the four classical baselines at $n = 8$--$20$.}}{9}{figure.5}\protected@file@percent }
+\newlabel{fig:qaoa-vs-baselines}{{5}{9}{E3. QAOA at $p = 6$ (mean cost and best of 10{,}000 shots) against the four classical baselines at $n = 8$--$20$}{figure.5}{}}
+\newlabel{fig:qaoa-vs-baselines@cref}{{[figure][5][]5}{[1][7][]9}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces E4 at $p = 3$. Left: wall time per circuit evaluation (log scale). Right: GPU memory above an idle CUDA context against the $2^n$-amplitude prediction.}}{10}{figure.6}\protected@file@percent }
+\newlabel{fig:e4}{{6}{10}{E4 at $p = 3$. Left: wall time per circuit evaluation (log scale). Right: GPU memory above an idle CUDA context against the $2^n$-amplitude prediction}{figure.6}{}}
+\newlabel{fig:e4@cref}{{[figure][6][]6}{[1][7][]10}{}{}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces E5. Angles optimised at $n = 20$, reused without optimisation at $n = 20$--$28$. Left: approximation ratio by depth. Right: $P(\text  {opt})$ (log scale), a lower bound above $n = 24$.}}{10}{figure.7}\protected@file@percent }
+\newlabel{fig:e5}{{7}{10}{E5. Angles optimised at $n = 20$, reused without optimisation at $n = 20$--$28$. Left: approximation ratio by depth. Right: $P(\text {opt})$ (log scale), a lower bound above $n = 24$}{figure.7}{}}
+\newlabel{fig:e5@cref}{{[figure][7][]7}{[1][7][]10}{}{}{}}
 \gdef \@abspage@last{10}

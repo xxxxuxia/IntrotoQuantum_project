@@ -213,6 +213,10 @@ INPUT ./sections/07_e1_depth.tex
 INPUT ./sections/07_e1_depth.tex
 INPUT sections/07_e1_depth.tex
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
+INPUT ../figures/pipeline.png
+INPUT ../figures/pipeline.png
+INPUT ../figures/pipeline.png
+INPUT ../figures/pipeline.png
 INPUT ../figures/E1_approx_ratio.png
 INPUT ../figures/E1_approx_ratio.png
 INPUT ../figures/E1_approx_ratio.png
